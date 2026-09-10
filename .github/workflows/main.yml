@@ -3,7 +3,7 @@ name: Duna XML Otomatik Guncelleme
 on:
   workflow_dispatch:
   schedule:
-    - cron: "*/30 * * * *"
+    - cron: "0 */5 * * *"
 
 permissions:
   contents: write
