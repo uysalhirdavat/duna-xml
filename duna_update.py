@@ -67,8 +67,10 @@ def duna_giris_yap():
     if not username or not password:
         raise RuntimeError("DUNA_USERNAME veya DUNA_PASSWORD GitHub Secret bulunamadi.")
 
-    # Önce Duna sayfasını açarak gerekli başlangıç cookie/tokenlarını al.
-    session.get(BASE_URL + "/uye-giris-sayfasi", timeout=30).raise_for_status()
+    # Duna'nin aktif bayi giris sayfasini ac ve gerekli cookie/tokenlari al.
+    giris_sayfasi = BASE_URL + "/bayi-girisi-sayfasi"
+    start = session.get(giris_sayfasi, timeout=30, allow_redirects=True)
+    start.raise_for_status()
 
     login_url = (
         BASE_URL
@@ -78,7 +80,7 @@ def duna_giris_yap():
     )
 
     login_headers = {
-        "Referer": BASE_URL + "/uye-giris-sayfasi",
+        "Referer": giris_sayfasi,
         "Origin": BASE_URL,
         "X-Requested-With": "XMLHttpRequest",
     }
@@ -92,20 +94,15 @@ def duna_giris_yap():
     )
     response.raise_for_status()
 
-    # Şifre veya cookie loglanmaz. Sadece oturumun gerçekten açıldığını doğrula.
+    # Sifre veya cookie loglanmaz. Sadece oturumun gercekten acildigini dogrula.
     check = session.get(BASE_URL + "/uye-siparisleri", timeout=30, allow_redirects=True)
     check.raise_for_status()
 
     final_url = check.url.lower()
-    check_text = check.text.lower()
-    login_failed = (
-        "uye-giris-sayfasi" in final_url
-        or "bayi-girisi-sayfasi" in final_url
-        or ("password" in check_text and "signin" in check_text and "uye-siparisleri" not in final_url)
-    )
-
-    if login_failed:
-        raise RuntimeError("Duna bayi girisi basarisiz. Kullanici adi/sifre veya giris akisi kontrol edilmeli.")
+    if "uye-siparisleri" not in final_url:
+        raise RuntimeError(
+            "Duna bayi girisi basarisiz. Kullanici adi/sifre veya giris akisi kontrol edilmeli."
+        )
 
     print("Duna bayi girisi basarili.")
 
