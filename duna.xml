@@ -5,7 +5,7 @@
     <code>T18620</code>
     <label>TROY 18620 Mini Boya Tabancası (1.0mm)</label>
     <stock>413</stock>
-    <details><![CDATA[<h2>TROY 18620 Mini Boya Tabancası (1.0mm)</h2><ul><li>Mini üstten beslemeli havalı boya tabancası</li><li>(HVLP) Yüksek hacim düşük basınç boya tabancası</li><li>Çevreye karşı daha duyarlı, boya ekonomisi yüksektir</li><li>Su bazlı ve diğer benzer viskoziteli boyalarla kullanılabilir</li><li>Manuel ayarlanabilir nozül setiyle sürekli basınçlı çalışma</li><li>Dayanıklı, uzun ömürlü prinçten mamül hava başlıkları</li><li>Paslanmaz çelik boya iğnesi ve nozülü, anotlanmış boya tabancası gövdesi</li><li>Anotlanmış yüzeyler kolayca temizlenir</li><li>Metal tabanca gövdesi</li><li>Ayarlanabilir nozül, fan genişliği, regülatör kontrolü</li><li>Çalışma basıncı: 3 bar (43Psi)</li><li>Boya haznesi kapasitesi: 125 ml</li><li>Hava girişi: 1/4'(N)PT</li><li>Meme çapı: 1.0 mm</li><li>Hava tüketimi: 15m3/saat</li></ul>]]></details>
+    <details><![CDATA[<h2>TROY 18620 Mini Boya Tabancası (1.0mm)</h2><ul><li>Mini üstten beslemeli havalı boya tabancası</li><li>(HVLP) Yüksek hacim düşük basınç boya tabancası</li><li>Çalışma basıncı: 3 bar (43Psi)</li><li>Boya haznesi kapasitesi: 125 ml</li><li>Meme çapı: 1.0 mm</li></ul>]]></details>
     <currency>TL</currency>
     <price1>789.05</price1>
     <tax>20</tax>
@@ -19,5 +19,25 @@
     <picture3></picture3>
     <picture4></picture4>
     <sourceUrl>https://www.duna.com.tr/troy-18620-mini-boya-tabancasi-2871</sourceUrl>
+  </item>
+  <item>
+    <id>TEST-2</id>
+    <code>TEST-2</code>
+    <label>Duna XML İkinci Test Ürünü</label>
+    <stock>1</stock>
+    <details><![CDATA[<p>Entegra ürün düğümü algılama testi için geçici ikinci kayıttır.</p>]]></details>
+    <currency>TL</currency>
+    <price1>1.00</price1>
+    <tax>20</tax>
+    <barcode>TEST000000002</barcode>
+    <brand>TROY</brand>
+    <mainCategory>Havalı Aletler</mainCategory>
+    <category>Boya Tabancası</category>
+    <subCategory></subCategory>
+    <picture1></picture1>
+    <picture2></picture2>
+    <picture3></picture3>
+    <picture4></picture4>
+    <sourceUrl></sourceUrl>
   </item>
 </root>
