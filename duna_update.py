@@ -141,13 +141,24 @@ def turkceye_cevir(text):
     if not text:
         return ""
 
-    if not ingilizce_mi(text):
+    # Sadece sayı/kod/sembol ise çevirme.
+    if not re.search(r"[A-Za-zÇĞİÖŞÜçğıöşü]", text):
+        return text
+
+    # Tek parça ürün kodu / marka benzeri ifadeleri gereksiz yere çevirme.
+    if (
+        " " not in text
+        and re.fullmatch(r"[A-Za-z0-9._/+()-]+", text)
+        and len(text) <= 24
+    ):
         return text
 
     if text in TRANSLATION_CACHE:
         return TRANSLATION_CACHE[text]
 
     try:
+        # source=auto olduğu için Türkçe metin Türkçe kalır;
+        # İngilizce metin Türkçeye çevrilir.
         translated = GoogleTranslator(
             source="auto",
             target="tr"
@@ -183,7 +194,9 @@ def html_turkcelestir(html_content):
         if parent_name in {"script", "style", "code"}:
             continue
 
-        if ingilizce_mi(text):
+        # Sayı/sembol dışında harf içeren tüm açıklama parçalarını
+        # GoogleTranslator'ın otomatik dil algısına gönder.
+        if re.search(r"[A-Za-zÇĞİÖŞÜçğıöşü]", text):
             translated = turkceye_cevir(text)
             node.replace_with(translated)
 
@@ -1127,7 +1140,7 @@ def urun_xml_ekle(
 
     # PRODUCT_DATA Ingilizce olsa bile Duna'nin Turkce detay basligi oncelikli.
     if detail_name:
-        name = detail_name
+        name = turkceye_cevir(detail_name)
     else:
         name = turkceye_cevir(name)
 
