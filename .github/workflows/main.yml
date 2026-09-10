@@ -27,6 +27,9 @@ jobs:
           pip install requests beautifulsoup4 lxml
 
       - name: Duna XML dosyasini guncelle
+        env:
+          DUNA_USERNAME: ${{ secrets.DUNA_USERNAME }}
+          DUNA_PASSWORD: ${{ secrets.DUNA_PASSWORD }}
         run: python duna_update.py
 
       - name: Degisiklikleri kaydet
