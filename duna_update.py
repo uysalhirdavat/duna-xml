@@ -9,6 +9,7 @@ from collections import Counter
 from urllib.parse import quote, urljoin, urlparse
 from bs4 import BeautifulSoup
 from lxml import etree
+from deep_translator import GoogleTranslator
 
 
 BASE_URL = "https://www.duna.com.tr"
@@ -87,6 +88,106 @@ def tl_fiyat_cevir(value):
 
     except Exception:
         return ""
+
+
+# =========================================================
+# TÜRKÇELEŞTİRME
+# =========================================================
+
+TRANSLATION_CACHE = {}
+
+ENGLISH_HINTS = {
+    "with", "without", "for", "and", "the", "of", "to", "from", "in", "on",
+    "tool", "tools", "power", "battery", "cordless", "electric", "drill",
+    "grinder", "saw", "cutting", "machine", "motor", "speed", "capacity",
+    "size", "weight", "length", "width", "height", "voltage", "maximum",
+    "minimum", "professional", "handle", "steel", "product", "technical",
+    "features", "specifications", "included", "package", "set", "piece",
+    "pieces", "air", "spray", "gun", "wrench", "hammer", "plier", "pliers",
+    "screwdriver", "socket", "blade", "disc", "wheel", "pump", "charger"
+}
+
+
+def ingilizce_mi(text):
+    text = temizle(text)
+
+    if len(text) < 4:
+        return False
+
+    low = text.lower()
+    words = re.findall(r"[a-zA-Z]+", low)
+    score = sum(1 for word in words if word in ENGLISH_HINTS)
+
+    if score >= 2:
+        return True
+
+    if len(words) >= 8:
+        turkish_chars = len(re.findall(r"[çğıöşüÇĞİÖŞÜ]", text))
+        english_like = len(
+            re.findall(
+                r"\b(?:is|are|can|has|have|this|that|with|for|and|the|from|into|your|its)\b",
+                low,
+            )
+        )
+        if turkish_chars == 0 and english_like >= 2:
+            return True
+
+    return False
+
+
+def turkceye_cevir(text):
+    text = temizle(text)
+
+    if not text:
+        return ""
+
+    if not ingilizce_mi(text):
+        return text
+
+    if text in TRANSLATION_CACHE:
+        return TRANSLATION_CACHE[text]
+
+    try:
+        translated = GoogleTranslator(
+            source="auto",
+            target="tr"
+        ).translate(text)
+
+        translated = temizle(translated) or text
+        TRANSLATION_CACHE[text] = translated
+        time.sleep(0.05)
+        return translated
+
+    except Exception as exc:
+        print("Ceviri hatasi:", exc)
+        TRANSLATION_CACHE[text] = text
+        return text
+
+
+def html_turkcelestir(html_content):
+    if not html_content:
+        return ""
+
+    soup = BeautifulSoup(
+        html_content,
+        "html.parser"
+    )
+
+    for node in soup.find_all(string=True):
+        text = temizle(node)
+
+        if not text:
+            continue
+
+        parent_name = getattr(node.parent, "name", "")
+        if parent_name in {"script", "style", "code"}:
+            continue
+
+        if ingilizce_mi(text):
+            translated = turkceye_cevir(text)
+            node.replace_with(translated)
+
+    return str(soup)
 
 
 # =========================================================
@@ -839,7 +940,12 @@ def detay_bilgileri(url):
 
     try:
 
-        html_text = sayfa_getir(url)
+        html_text = sayfa_getir(
+            url,
+            params={
+                "language": "tr"
+            }
+        )
 
     except Exception as exc:
 
@@ -884,6 +990,10 @@ def detay_bilgileri(url):
 
             description = str(node)
             break
+
+    # Duna'da İngilizce kalan açıklama/teknik metin varsa Türkçeleştir.
+    if description:
+        description = html_turkcelestir(description)
 
     images = []
 
@@ -970,6 +1080,8 @@ def urun_xml_ekle(
         product.get("name")
     )
 
+    name = turkceye_cevir(name)
+
     barcode = temizle(
         product.get("barcode")
     )
@@ -995,6 +1107,8 @@ def urun_xml_ekle(
     category = temizle(
         product.get("category")
     )
+
+    category = turkceye_cevir(category)
 
     category_path = temizle(
         product.get(
@@ -1071,10 +1185,10 @@ def urun_xml_ekle(
 
         # Tüm Ürün Grupları > El Aletleri > Pense >
         if len(parts) >= 2:
-            main_category = parts[1]
+            main_category = turkceye_cevir(parts[1])
 
         if len(parts) >= 3:
-            sub_category = parts[2]
+            sub_category = turkceye_cevir(parts[2])
 
     xml_eleman(
         item,
