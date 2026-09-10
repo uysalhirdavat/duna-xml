@@ -8,9 +8,14 @@ on:
 permissions:
   contents: write
 
+concurrency:
+  group: duna-xml-update
+  cancel-in-progress: false
+
 jobs:
   update-duna-xml:
     runs-on: ubuntu-latest
+    timeout-minutes: 75
 
     steps:
       - name: Depoyu al
@@ -36,7 +41,7 @@ jobs:
         run: |
           git config user.name "duna-xml-bot"
           git config user.email "actions@github.com"
-          git add duna.xml
-          git diff --cached --quiet || git commit -m "Duna XML otomatik guncelleme"
+          git add duna.xml translations.json
+          git diff --cached --quiet || git commit -m "Duna XML ve ceviri onbellegi guncelleme"
           git pull --rebase origin main
           git push
