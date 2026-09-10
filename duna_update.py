@@ -135,17 +135,36 @@ def ingilizce_mi(text):
     return False
 
 
+def ceviri_hatali_mi(text):
+    low = temizle(text).lower()
+
+    hata_ifadeleri = [
+        "error 500",
+        "server error",
+        "please try again later",
+        "that's an error",
+        "that’s an error",
+        "that's all we know",
+        "that’s all we know",
+        "service unavailable",
+        "too many requests",
+        "429 too many requests",
+    ]
+
+    return any(x in low for x in hata_ifadeleri)
+
+
 def turkceye_cevir(text):
     text = temizle(text)
 
     if not text:
         return ""
 
-    # Sadece sayı/kod/sembol ise çevirme.
+    # Sadece sayı / kod / sembol ise çevirme.
     if not re.search(r"[A-Za-zÇĞİÖŞÜçğıöşü]", text):
         return text
 
-    # Tek parça ürün kodu / marka benzeri ifadeleri gereksiz yere çevirme.
+    # Tek parça ürün kodu veya marka benzeri kısa ifadeleri elleme.
     if (
         " " not in text
         and re.fullmatch(r"[A-Za-z0-9._/+()-]+", text)
@@ -156,23 +175,49 @@ def turkceye_cevir(text):
     if text in TRANSLATION_CACHE:
         return TRANSLATION_CACHE[text]
 
-    try:
-        # source=auto olduğu için Türkçe metin Türkçe kalır;
-        # İngilizce metin Türkçeye çevrilir.
-        translated = GoogleTranslator(
-            source="auto",
-            target="tr"
-        ).translate(text)
+    son_hata = None
 
-        translated = temizle(translated) or text
-        TRANSLATION_CACHE[text] = translated
-        time.sleep(0.05)
-        return translated
+    for deneme in range(1, 4):
+        try:
+            translated = GoogleTranslator(
+                source="auto",
+                target="tr"
+            ).translate(text)
 
-    except Exception as exc:
-        print("Ceviri hatasi:", exc)
-        TRANSLATION_CACHE[text] = text
-        return text
+            translated = temizle(translated)
+
+            # Google hata sayfasını çeviri sanıp ürün adına yazma.
+            if not translated or ceviri_hatali_mi(translated):
+                raise RuntimeError(
+                    f"Ceviri servisi gecersiz yanit verdi: {translated[:120]}"
+                )
+
+            TRANSLATION_CACHE[text] = translated
+
+            # Çok hızlı istek atıp Google'ı kilitlememek için küçük bekleme.
+            time.sleep(0.25)
+
+            return translated
+
+        except Exception as exc:
+            son_hata = exc
+            print(
+                f"Ceviri denemesi basarisiz ({deneme}/3):",
+                exc
+            )
+            time.sleep(1.5 * deneme)
+
+    # 3 deneme de başarısızsa hata metnini ASLA XML'e yazma.
+    # Orijinal metni koru.
+    print(
+        "Ceviri atlandi, orijinal metin korunuyor:",
+        text[:120],
+        "| hata:",
+        son_hata
+    )
+
+    TRANSLATION_CACHE[text] = text
+    return text
 
 
 def html_turkcelestir(html_content):
@@ -1409,7 +1454,7 @@ def main():
                         exc
                     )
 
-                time.sleep(0.08)
+                time.sleep(0.20)
 
     etree.ElementTree(
         root
