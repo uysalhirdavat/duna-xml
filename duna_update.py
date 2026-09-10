@@ -3,6 +3,8 @@ import re
 import json
 import html
 import time
+import os
+from urllib.parse import quote
 from bs4 import BeautifulSoup
 from lxml import etree
 
@@ -32,15 +34,22 @@ def temizle(value):
 
 
 def tl_fiyat_cevir(value):
+    if value is None:
+        return ""
+    value = str(value).strip()
+    value = re.sub(r"[^0-9,.\-]", "", value)
     if not value:
         return ""
 
-    value = str(value).strip()
-
-    if "," in value:
+    if "," in value and "." in value:
+        if value.rfind(",") > value.rfind("."):
+            value = value.replace(".", "").replace(",", ".")
+        else:
+            value = value.replace(",", "")
+    elif "," in value:
         value = value.replace(".", "").replace(",", ".")
-
-    value = re.sub(r"[^0-9.]", "", value)
+    elif re.fullmatch(r"-?\d{1,3}(?:\.\d{3})+", value):
+        value = value.replace(".", "")
 
     try:
         price = float(value)
@@ -51,6 +60,56 @@ def tl_fiyat_cevir(value):
         return ""
 
 
+def duna_giris_yap():
+    username = os.environ.get("DUNA_USERNAME", "").strip()
+    password = os.environ.get("DUNA_PASSWORD", "")
+
+    if not username or not password:
+        raise RuntimeError("DUNA_USERNAME veya DUNA_PASSWORD GitHub Secret bulunamadi.")
+
+    # Önce Duna sayfasını açarak gerekli başlangıç cookie/tokenlarını al.
+    session.get(BASE_URL + "/uye-giris-sayfasi", timeout=30).raise_for_status()
+
+    login_url = (
+        BASE_URL
+        + "/srv/customer/signin/email/"
+        + quote(username, safe="")
+        + "?language=tr"
+    )
+
+    login_headers = {
+        "Referer": BASE_URL + "/uye-giris-sayfasi",
+        "Origin": BASE_URL,
+        "X-Requested-With": "XMLHttpRequest",
+    }
+
+    response = session.post(
+        login_url,
+        data={"password": password, "remember": "1"},
+        headers=login_headers,
+        timeout=30,
+        allow_redirects=True,
+    )
+    response.raise_for_status()
+
+    # Şifre veya cookie loglanmaz. Sadece oturumun gerçekten açıldığını doğrula.
+    check = session.get(BASE_URL + "/uye-siparisleri", timeout=30, allow_redirects=True)
+    check.raise_for_status()
+
+    final_url = check.url.lower()
+    check_text = check.text.lower()
+    login_failed = (
+        "uye-giris-sayfasi" in final_url
+        or "bayi-girisi-sayfasi" in final_url
+        or ("password" in check_text and "signin" in check_text and "uye-siparisleri" not in final_url)
+    )
+
+    if login_failed:
+        raise RuntimeError("Duna bayi girisi basarisiz. Kullanici adi/sifre veya giris akisi kontrol edilmeli.")
+
+    print("Duna bayi girisi basarili.")
+
+
 def sayfa_getir(url):
     response = session.get(url, timeout=30)
     response.raise_for_status()
@@ -59,27 +118,21 @@ def sayfa_getir(url):
 
 def product_data_bul(html_text):
     products = []
-
     pattern = re.compile(
         r"PRODUCT_DATA\.push\(JSON\.parse\('((?:\\.|[^'])*)'\)\)",
         re.DOTALL
     )
-
     for match in pattern.finditer(html_text):
         raw = match.group(1)
-
         try:
             decoded = bytes(raw, "utf-8").decode("unicode_escape")
             decoded = decoded.encode("latin1").decode("utf-8")
         except Exception:
             decoded = raw.replace("\\'", "'").replace('\\"', '"')
-
         try:
-            data = json.loads(decoded)
-            products.append(data)
+            products.append(json.loads(decoded))
         except Exception:
             continue
-
     return products
 
 
@@ -88,12 +141,8 @@ def html_icinden_fiyat_bul(node):
         return ""
 
     possible_attrs = [
-        "data-price",
-        "data-sale-price",
-        "data-product-price",
-        "data-discount-price",
-        "data-final-price",
-        "data-price1",
+        "data-price", "data-sale-price", "data-product-price",
+        "data-discount-price", "data-final-price", "data-price1",
         "data-price-without-vat",
     ]
 
@@ -106,19 +155,13 @@ def html_icinden_fiyat_bul(node):
                     return fiyat
 
     price_tag = node.find(attrs={"itemprop": "price"})
-
     if price_tag:
-        value = (
-            price_tag.get("content")
-            or price_tag.get("value")
-            or price_tag.get_text(" ", strip=True)
-        )
+        value = price_tag.get("content") or price_tag.get("value") or price_tag.get_text(" ", strip=True)
         fiyat = tl_fiyat_cevir(value)
         if fiyat:
             return fiyat
 
     raw_html = str(node)
-
     patterns = [
         r'"salePrice"\s*:\s*"?([0-9.,]+)',
         r'"discountedPrice"\s*:\s*"?([0-9.,]+)',
@@ -129,7 +172,6 @@ def html_icinden_fiyat_bul(node):
         r'data-sale-price=["\']([0-9.,]+)',
         r'data-product-price=["\']([0-9.,]+)',
     ]
-
     for pattern in patterns:
         match = re.search(pattern, raw_html, re.I)
         if match:
@@ -138,52 +180,42 @@ def html_icinden_fiyat_bul(node):
                 return fiyat
 
     text = node.get_text(" ", strip=True)
-
     matches = re.findall(
         r"([0-9]{1,3}(?:\.[0-9]{3})*(?:,[0-9]{2})|[0-9]+,[0-9]{2})\s*(?:TL|₺)",
         text,
         re.I,
     )
-
     if matches:
         fiyat = tl_fiyat_cevir(matches[-1])
         if fiyat:
             return fiyat
-
     return ""
 
 
 def kart_fiyati_bul(html_text, product_id, product_url=""):
     soup = BeautifulSoup(html_text, "html.parser")
-
     card = soup.find(attrs={"data-id": str(product_id)})
-
     if card:
         fiyat = html_icinden_fiyat_bul(card)
         if fiyat:
             return fiyat
-
         parent = card
-
         for _ in range(6):
             parent = parent.parent
             if not parent:
                 break
-
             fiyat = html_icinden_fiyat_bul(parent)
             if fiyat:
                 return fiyat
 
     if product_url:
         try:
-            detail_html = sayfa_getir(product_url)
-            detail_soup = BeautifulSoup(detail_html, "html.parser")
+            detail_soup = BeautifulSoup(sayfa_getir(product_url), "html.parser")
             fiyat = html_icinden_fiyat_bul(detail_soup)
             if fiyat:
                 return fiyat
         except Exception as exc:
-            print("Fiyat için detay sayfası okunamadı:", product_url, exc)
-
+            print("Fiyat icin detay sayfasi okunamadi:", product_url, exc)
     return ""
 
 
@@ -191,49 +223,33 @@ def detay_bilgileri(url):
     try:
         html_text = sayfa_getir(url)
     except Exception as exc:
-        print("Detay sayfası alınamadı:", url, exc)
+        print("Detay sayfasi alinamadi:", url, exc)
         return "", []
 
     soup = BeautifulSoup(html_text, "html.parser")
     description = ""
-
     selectors = [
-        "#product-features",
-        ".product-detail-description",
-        ".product-description",
-        ".productDetailDescription",
-        "[itemprop='description']",
+        "#product-features", ".product-detail-description", ".product-description",
+        ".productDetailDescription", "[itemprop='description']",
     ]
-
     for selector in selectors:
         node = soup.select_one(selector)
-        if node:
-            text = node.get_text(" ", strip=True)
-            if len(text) > 30:
-                description = str(node)
-                break
+        if node and len(node.get_text(" ", strip=True)) > 30:
+            description = str(node)
+            break
 
     images = []
-
     for img in soup.find_all("img"):
         src = img.get("data-src") or img.get("data-original") or img.get("src")
         if not src:
             continue
-
         src = html.unescape(src)
-
         if src.startswith("//"):
             src = "https:" + src
         elif src.startswith("/"):
             src = BASE_URL + src
-
-        if (
-            "duna.com.tr" in src
-            and ("-O." in src or "-B." in src)
-            and src not in images
-        ):
+        if "duna.com.tr" in src and ("-O." in src or "-B." in src) and src not in images:
             images.append(src)
-
     return description, images[:5]
 
 
@@ -246,7 +262,6 @@ def xml_eleman(parent, tag, value=""):
 
 def urun_xml_ekle(root, product, category_html):
     item = etree.SubElement(root, "item")
-
     product_id = temizle(product.get("id"))
     code = temizle(product.get("code") or product.get("supplier_code"))
     name = temizle(product.get("name"))
@@ -257,30 +272,22 @@ def urun_xml_ekle(root, product, category_html):
     category = temizle(product.get("category"))
     category_path = temizle(product.get("category_path"))
     relative_url = temizle(product.get("url"))
-
-    if relative_url.startswith("http"):
-        product_url = relative_url
-    else:
-        product_url = BASE_URL + relative_url
+    product_url = relative_url if relative_url.startswith("http") else BASE_URL + relative_url
 
     price = kart_fiyati_bul(category_html, product_id, product_url)
-
     if not price:
-        print(f"UYARI: Fiyat bulunamadı | {code} | {name}")
+        print(f"UYARI: Fiyat bulunamadi | {code} | {name}")
 
     description, detail_images = detay_bilgileri(product_url)
     source_image = temizle(product.get("image"))
     images = []
-
     if source_image:
         images.append(source_image)
-
     for image in detail_images:
         if image not in images:
             images.append(image)
 
     main_category = ""
-
     if category_path:
         parts = [p.strip() for p in category_path.split(">") if p.strip()]
         if len(parts) >= 2:
@@ -292,13 +299,8 @@ def urun_xml_ekle(root, product, category_html):
     xml_eleman(item, "code", code)
     xml_eleman(item, "label", name)
     xml_eleman(item, "stock", quantity)
-
     details = etree.SubElement(item, "details")
-    if description:
-        details.text = etree.CDATA(description)
-    else:
-        details.text = etree.CDATA(f"<h2>{html.escape(name)}</h2>")
-
+    details.text = etree.CDATA(description if description else f"<h2>{html.escape(name)}</h2>")
     xml_eleman(item, "currency", "TL")
     xml_eleman(item, "price1", price)
     xml_eleman(item, "tax", vat)
@@ -307,60 +309,44 @@ def urun_xml_ekle(root, product, category_html):
     xml_eleman(item, "mainCategory", main_category)
     xml_eleman(item, "category", category)
     xml_eleman(item, "subCategory", "")
-
     for i in range(5):
-        value = images[i] if i < len(images) else ""
-        xml_eleman(item, f"picture{i + 1}", value)
-
+        xml_eleman(item, f"picture{i + 1}", images[i] if i < len(images) else "")
     xml_eleman(item, "sourceUrl", product_url)
-
-    print(
-        f"Eklendi: {code} | {name} | stok={quantity} | fiyat={price}"
-    )
+    print(f"Eklendi: {code} | {name} | stok={quantity} | fiyat={price}")
 
 
 def main():
+    duna_giris_yap()
+
     root = etree.Element("root")
     seen = set()
-
     for category_url in CATEGORY_URLS:
         print("Kategori okunuyor:", category_url)
-
         try:
             category_html = sayfa_getir(category_url)
         except Exception as exc:
-            print("Kategori alınamadı:", exc)
+            print("Kategori alinamadi:", exc)
             continue
 
         products = product_data_bul(category_html)
-        print("Bulunan ürün:", len(products))
-
+        print("Bulunan urun:", len(products))
         for product in products:
             product_id = temizle(product.get("id"))
-
             if not product_id or product_id in seen:
                 continue
-
             seen.add(product_id)
-
             try:
                 urun_xml_ekle(root, product, category_html)
             except Exception as exc:
-                print("Ürün işlenirken hata:", product_id, exc)
-
+                print("Urun islenirken hata:", product_id, exc)
             time.sleep(0.3)
 
-    tree = etree.ElementTree(root)
-    tree.write(
-        "duna.xml",
-        pretty_print=True,
-        xml_declaration=True,
-        encoding="UTF-8"
+    etree.ElementTree(root).write(
+        "duna.xml", pretty_print=True, xml_declaration=True, encoding="UTF-8"
     )
-
     print("")
-    print("duna.xml güncellendi.")
-    print("Toplam ürün:", len(seen))
+    print("duna.xml guncellendi.")
+    print("Toplam urun:", len(seen))
 
 
 if __name__ == "__main__":
