@@ -6,11 +6,9 @@ import time
 import os
 
 from collections import Counter
-from pathlib import Path
 from urllib.parse import quote, urljoin, urlparse
 from bs4 import BeautifulSoup
 from lxml import etree
-from deep_translator import GoogleTranslator
 
 
 BASE_URL = "https://www.duna.com.tr"
@@ -89,274 +87,6 @@ def tl_fiyat_cevir(value):
 
     except Exception:
         return ""
-
-
-# =========================================================
-# TÜRKÇELEŞTİRME + KALICI ÖNBELLEK
-# =========================================================
-
-TRANSLATION_CACHE_FILE = "translations.json"
-
-# Ücretsiz çeviri servisini boğmamak için her çalışmada yeni çeviri sınırı.
-# Başlık/kategori önceliklidir. Önbellek doldukça sonraki çalışmalarda
-# çeviri isteği azalır ve XML daha hızlı güncellenir.
-MAX_NEW_PRIORITY_TRANSLATIONS = 450
-MAX_NEW_DESCRIPTION_TRANSLATIONS = 100
-
-TRANSLATION_CACHE = {}
-NEW_PRIORITY_TRANSLATIONS = 0
-NEW_DESCRIPTION_TRANSLATIONS = 0
-
-ENGLISH_HINTS = {
-    "with", "without", "for", "and", "the", "of", "to", "from", "in", "on",
-    "tool", "tools", "power", "battery", "cordless", "electric", "drill",
-    "grinder", "saw", "cutting", "machine", "motor", "speed", "capacity",
-    "size", "weight", "length", "width", "height", "voltage", "maximum",
-    "minimum", "professional", "handle", "steel", "product", "technical",
-    "features", "specifications", "included", "package", "set", "piece",
-    "pieces", "air", "spray", "gun", "wrench", "hammer", "plier", "pliers",
-    "screwdriver", "socket", "blade", "disc", "wheel", "pump", "charger",
-    "dimensions", "suitable", "working", "pressure", "temperature",
-    "material", "range", "diameter", "input", "output", "frequency",
-    "current", "powerful", "adjustable", "heavy", "duty", "replacement",
-    "spare", "sharpening", "bench", "combination", "ratchet", "slotted",
-    "phillips", "reversible", "locking", "nose", "long", "straight",
-    "cutter", "foam", "rivet", "blow", "inflating", "hose", "filter",
-    "regulator", "lubricator", "universal", "multi", "function"
-}
-
-
-def ceviri_onbellegi_yukle():
-    global TRANSLATION_CACHE
-
-    path = Path(TRANSLATION_CACHE_FILE)
-
-    if not path.exists():
-        TRANSLATION_CACHE = {}
-        print("Ceviri onbellegi yok, yeni olusturulacak.")
-        return
-
-    try:
-        data = json.loads(
-            path.read_text(encoding="utf-8")
-        )
-
-        if isinstance(data, dict):
-            TRANSLATION_CACHE = data
-        else:
-            TRANSLATION_CACHE = {}
-
-        print(
-            "Ceviri onbellegi yuklendi:",
-            len(TRANSLATION_CACHE)
-        )
-
-    except Exception as exc:
-        print("Ceviri onbellegi okunamadi:", exc)
-        TRANSLATION_CACHE = {}
-
-
-def ceviri_onbellegi_kaydet():
-    try:
-        Path(TRANSLATION_CACHE_FILE).write_text(
-            json.dumps(
-                TRANSLATION_CACHE,
-                ensure_ascii=False,
-                indent=2,
-                sort_keys=True
-            ),
-            encoding="utf-8"
-        )
-
-        print(
-            "Ceviri onbellegi kaydedildi:",
-            len(TRANSLATION_CACHE)
-        )
-
-    except Exception as exc:
-        print("Ceviri onbellegi kaydedilemedi:", exc)
-
-
-def ingilizce_mi(text):
-    text = temizle(text)
-
-    if len(text) < 2:
-        return False
-
-    low = text.lower()
-    words = re.findall(r"[a-zA-Z]+", low)
-
-    if not words:
-        return False
-
-    # Teknik açıklamalardaki kısa İngilizce başlıkları da yakala:
-    # Dimensions, Weight, Power, Voltage gibi.
-    if any(word in ENGLISH_HINTS for word in words):
-        return True
-
-    # İngilizce cümle kalıpları.
-    if re.search(
-        r"\b(?:is|are|can|has|have|this|that|these|those|with|without|for|and|the|from|into|your|its|suitable)\b",
-        low
-    ):
-        return True
-
-    return False
-
-
-def ceviri_hatali_mi(text):
-    low = temizle(text).lower()
-
-    hata_ifadeleri = [
-        "error 500",
-        "server error",
-        "please try again later",
-        "that's an error",
-        "that’s an error",
-        "that's all we know",
-        "that’s all we know",
-        "service unavailable",
-        "too many requests",
-        "429 too many requests",
-        "bad gateway",
-        "gateway timeout",
-    ]
-
-    return any(x in low for x in hata_ifadeleri)
-
-
-def ceviri_anahtari(text, kind):
-    return f"{kind}::{text}"
-
-
-def turkceye_cevir(text, kind="priority", force=False):
-    global NEW_PRIORITY_TRANSLATIONS
-    global NEW_DESCRIPTION_TRANSLATIONS
-
-    text = temizle(text)
-
-    if not text:
-        return ""
-
-    if not re.search(r"[A-Za-zÇĞİÖŞÜçğıöşü]", text):
-        return text
-
-    # Tek parça marka/kodları elleme.
-    if (
-        " " not in text
-        and re.fullmatch(r"[A-Za-z0-9._/+()-]+", text)
-        and len(text) <= 24
-    ):
-        return text
-
-    key = ceviri_anahtari(text, kind)
-
-    if key in TRANSLATION_CACHE:
-        cached = temizle(TRANSLATION_CACHE[key])
-
-        if cached and not ceviri_hatali_mi(cached):
-            return cached
-
-    # Açıklamada yalnızca İngilizce görünen parçaları çevir.
-    if kind == "description" and not force and not ingilizce_mi(text):
-        return text
-
-    if kind == "description":
-        if NEW_DESCRIPTION_TRANSLATIONS >= MAX_NEW_DESCRIPTION_TRANSLATIONS:
-            return text
-    else:
-        if NEW_PRIORITY_TRANSLATIONS >= MAX_NEW_PRIORITY_TRANSLATIONS:
-            return text
-
-    son_hata = None
-
-    for deneme in range(1, 4):
-        try:
-            translated = GoogleTranslator(
-                source="auto",
-                target="tr"
-            ).translate(text)
-
-            translated = temizle(translated)
-
-            if not translated or ceviri_hatali_mi(translated):
-                raise RuntimeError(
-                    "Ceviri servisi gecersiz yanit verdi."
-                )
-
-            TRANSLATION_CACHE[key] = translated
-
-            if kind == "description":
-                NEW_DESCRIPTION_TRANSLATIONS += 1
-            else:
-                NEW_PRIORITY_TRANSLATIONS += 1
-
-            # Her başarılı çeviriden sonra küçük gecikme.
-            time.sleep(0.80)
-
-            # Her 25 yeni çeviride diske yaz.
-            toplam_yeni = (
-                NEW_PRIORITY_TRANSLATIONS
-                + NEW_DESCRIPTION_TRANSLATIONS
-            )
-
-            if toplam_yeni % 25 == 0:
-                ceviri_onbellegi_kaydet()
-
-            return translated
-
-        except Exception as exc:
-            son_hata = exc
-            print(
-                f"Ceviri denemesi basarisiz ({deneme}/3):",
-                exc
-            )
-            time.sleep(4 * deneme)
-
-    # Başarısız çeviriyi önbelleğe koyma.
-    # Böylece sonraki çalışmada tekrar denenebilir.
-    print(
-        "Ceviri atlandi, orijinal metin korunuyor:",
-        text[:120],
-        "| hata:",
-        son_hata
-    )
-
-    return text
-
-
-def html_turkcelestir(html_content):
-    if not html_content:
-        return ""
-
-    soup = BeautifulSoup(
-        html_content,
-        "html.parser"
-    )
-
-    for node in soup.find_all(string=True):
-        text = temizle(node)
-
-        if not text:
-            continue
-
-        parent_name = getattr(node.parent, "name", "")
-        if parent_name in {"script", "style", "code"}:
-            continue
-
-        if ingilizce_mi(text):
-            translated = turkceye_cevir(
-                text,
-                kind="description"
-            )
-            node.replace_with(translated)
-
-    return str(soup)
-
-
-
-
-    return str(soup)
 
 
 # =========================================================
@@ -1108,15 +838,29 @@ def kart_fiyati_bul(
 def detay_bilgileri(url):
 
     try:
-        html_text = sayfa_getir(url, params={"language": "tr"})
+        html_text = sayfa_getir(
+            url,
+            params={
+                "language": "tr"
+            }
+        )
+
     except Exception as exc:
-        print("Detay sayfasi alinamadi:", url, exc)
+        print(
+            "Detay sayfasi alinamadi:",
+            url,
+            exc
+        )
         return "", "", []
 
-    soup = BeautifulSoup(html_text, "html.parser")
+    soup = BeautifulSoup(
+        html_text,
+        "html.parser"
+    )
 
-    # Duna'nin kullaniciya gosterdigi Turkce urun basligini al.
+    # Duna detay sayfasındaki ürün adını olduğu gibi al.
     detail_name = ""
+
     for selector in [
         "#product-title",
         "h1#product-title",
@@ -1125,12 +869,20 @@ def detay_bilgileri(url):
         "h1"
     ]:
         node = soup.select_one(selector)
+
         if node:
-            candidate = temizle(node.get_text(" ", strip=True))
+            candidate = temizle(
+                node.get_text(
+                    " ",
+                    strip=True
+                )
+            )
+
             if candidate:
                 detail_name = candidate
                 break
 
+    # Duna açıklama / teknik özellik HTML'ini olduğu gibi al.
     description = ""
 
     for selector in [
@@ -1141,17 +893,24 @@ def detay_bilgileri(url):
         "[itemprop='description']",
     ]:
         node = soup.select_one(selector)
-        if node and len(node.get_text(" ", strip=True)) > 30:
+
+        if (
+            node
+            and len(
+                node.get_text(
+                    " ",
+                    strip=True
+                )
+            ) > 30
+        ):
             description = str(node)
             break
 
-    # Duna Turkce sayfada teknik metni Ingilizce biraktiysa yedek ceviri.
-    if description:
-        description = html_turkcelestir(description)
-
     images = []
 
-    for img in soup.find_all("img"):
+    for img in soup.find_all(
+        "img"
+    ):
         image_src = (
             img.get("data-src")
             or img.get("data-original")
@@ -1165,17 +924,25 @@ def detay_bilgileri(url):
 
         if image_src.startswith("//"):
             image_src = "https:" + image_src
+
         elif image_src.startswith("/"):
             image_src = BASE_URL + image_src
 
         if (
             "duna.com.tr" in image_src
-            and ("-O." in image_src or "-B." in image_src)
+            and (
+                "-O." in image_src
+                or "-B." in image_src
+            )
             and image_src not in images
         ):
             images.append(image_src)
 
-    return detail_name, description, images[:5]
+    return (
+        detail_name,
+        description,
+        images[:5]
+    )
 
 
 # =========================================================
@@ -1249,8 +1016,6 @@ def urun_xml_ekle(
         product.get("category")
     )
 
-    category = turkceye_cevir(category, kind="priority", force=True)
-
     category_path = temizle(
         product.get(
             "category_path"
@@ -1294,11 +1059,9 @@ def urun_xml_ekle(
         )
     )
 
-    # PRODUCT_DATA Ingilizce olsa bile Duna'nin Turkce detay basligi oncelikli.
+    # Detay sayfasında isim bulunduysa aynen kullan.
     if detail_name:
-        name = turkceye_cevir(detail_name, kind="priority", force=True)
-    else:
-        name = turkceye_cevir(name, kind="priority", force=True)
+        name = detail_name
 
     images = []
 
@@ -1332,10 +1095,10 @@ def urun_xml_ekle(
 
         # Tüm Ürün Grupları > El Aletleri > Pense >
         if len(parts) >= 2:
-            main_category = turkceye_cevir(parts[1], kind="priority", force=True)
+            main_category = parts[1]
 
         if len(parts) >= 3:
-            sub_category = turkceye_cevir(parts[2], kind="priority", force=True)
+            sub_category = parts[2]
 
     xml_eleman(
         item,
@@ -1461,8 +1224,6 @@ def urun_xml_ekle(
 
 def main():
 
-    ceviri_onbellegi_yukle()
-
     duna_giris_yap()
 
     category_urls = (
@@ -1569,8 +1330,6 @@ def main():
 
                 time.sleep(0.20)
 
-    ceviri_onbellegi_kaydet()
-
     etree.ElementTree(
         root
     ).write(
@@ -1603,22 +1362,6 @@ def main():
         "Toplam benzersiz urun:",
         len(seen)
     )
-
-    print(
-        "Yeni oncelikli ceviri:",
-        NEW_PRIORITY_TRANSLATIONS
-    )
-
-    print(
-        "Yeni aciklama cevirisi:",
-        NEW_DESCRIPTION_TRANSLATIONS
-    )
-
-    print(
-        "Toplam ceviri onbellegi:",
-        len(TRANSLATION_CACHE)
-    )
-
     print(
         "================================="
     )
