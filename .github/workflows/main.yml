@@ -3,7 +3,7 @@ name: Duna XML Otomatik Guncelleme
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 */5 * * *"
+    - cron: "0 */2 * * *"
 
 permissions:
   contents: write
@@ -29,7 +29,7 @@ jobs:
       - name: Kutuphaneleri kur
         run: |
           python -m pip install --upgrade pip
-          pip install requests beautifulsoup4 lxml deep-translator
+          pip install requests beautifulsoup4 lxml
 
       - name: Duna XML dosyasini guncelle
         env:
@@ -41,7 +41,7 @@ jobs:
         run: |
           git config user.name "duna-xml-bot"
           git config user.email "actions@github.com"
-          git add duna.xml translations.json
-          git diff --cached --quiet || git commit -m "Duna XML ve ceviri onbellegi guncelleme"
+          git add duna.xml
+          git diff --cached --quiet || git commit -m "Duna XML otomatik guncelleme"
           git pull --rebase origin main
           git push
