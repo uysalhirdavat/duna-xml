@@ -1,43 +1,302 @@
-<?xml version="1.0" encoding="UTF-8"?>
+<?xml version='1.0' encoding='UTF-8'?>
 <root>
   <item>
-    <id>2870</id>
-    <code>T18620</code>
+    <id>1837</id>
+    <code>T 18609</code>
+    <label>TROY 18609 Mini Rötuş Tabancası 0.5mm</label>
+    <stock>329</stock>
+    <details><![CDATA[<div class="active space-y-4 md:space-y-6" id="product-features"><div class="w-full text-left leading-relaxed [&amp;_p]:mb-2 [&amp;_ul]:list-disc [&amp;_ul]:ps-8 prose-sm lg:prose evolution-detail"><p><strong>TROY 18609 Mini Rötuş Tabancası 0.5mm</strong></p><br/><iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="allowfullscreen" frameborder="0" height="315" loading="lazy" src="https://www.youtube.com/embed/AZPiY__hXqQ" width="560"></iframe><p>● Üstten beslemeli mini rötuş, gölgeleme, bordür, boya tabancası<br/>● Selüloz bazlı, metalik, sentetik ve diğer benzer viskoziteli boyalarla kullanılabilir<br/>● Cilali, paslanmaz metal tabanca gövdesi<br/>● Kolay temizlenir<br/>● Ayarlanabilir nozül, fan genişliği, regülatör kontrolü<br/>● Meme çapı: 0.5 mm<br/>● Çalışma basıncı: 3,5bar (50Psi)<br/>● Hava tüketimi: 8,5m3/saat (5cfm)<br/>● Boya haznesi kapasitesi: 125ml<br/>● Besleme tipi: yerçekimi<br/>● Hava girişi: G1/4'</p></div><table class="w-auto max-w-full overflow-x-scroll"><tbody><tr><th class="text-left" colspan="2">Boyutlar</th><th class="text-left">
+									Ölçüler</th></tr><tr><td>Ağırlık</td><td>:</td><td>
+										0.69999998807907</td></tr></tbody></table></div>]]></details>
+    <currency>TL</currency>
+    <price1></price1>
+    <tax>20</tax>
+    <barcode>4260122899579</barcode>
+    <brand>TROY</brand>
+    <mainCategory>Havalı Aletler</mainCategory>
+    <category>Boya Tabancası</category>
+    <subCategory></subCategory>
+    <picture1>https://www.duna.com.tr/troy-18609-mini-rotus-tabancasi-0-boya-tabancasi-troy-4683560-18-O.jpg</picture1>
+    <picture2>https://www.duna.com.tr/troy-18609-mini-rotus-tabancasi-0-boya-tabancasi-troy-4683558-18-O.jpg</picture2>
+    <picture3>https://www.duna.com.tr/troy-18609-mini-rotus-tabancasi-0-boya-tabancasi-troy-4683559-18-O.jpg</picture3>
+    <picture4>https://www.duna.com.tr/troy-18609-mini-rotus-tabancasi-0-boya-tabancasi-troy-4412627-18-O.jpg</picture4>
+    <picture5>https://www.duna.com.tr/troy-18609-mini-rotus-tabancasi-0-boya-tabancasi-troy-4412629-18-O.jpg</picture5>
+    <sourceUrl>https://www.duna.com.tr/troy-18609-mini-rotus-tabancasi-0</sourceUrl>
+  </item>
+  <item>
+    <id>1811</id>
+    <code>T 18619</code>
+    <label>TROY 18619 Profesyonel Boya Tabancası (1.8mm)</label>
+    <stock>160</stock>
+    <details><![CDATA[<div class="active space-y-4 md:space-y-6" id="product-features"><div class="w-full text-left leading-relaxed [&amp;_p]:mb-2 [&amp;_ul]:list-disc [&amp;_ul]:ps-8 prose-sm lg:prose evolution-detail"><p><strong>TROY 18619 Profesyonel Boya Tabancası (1.8mm)</strong></p><p>● Profesyonel kalite alttan beslemeli boya tabancası <br/>● (HVLP) Yüksek hacim düşük basınç boya tabancası <br/>● Çevreye karşı daha duyarlı, boya ekonomisi yüksektir <br/>● Alüminyum boya hazneli <br/>● Su bazlı ve diğer benzer viskoziteli boyalarla kullanılabilir<br/>● Dayanıklı, uzun ömürlü prinçten mamül hava başlıkları <br/>● Paslanmaz çelik boya iğnesi ve nozülü, anotlanmış boya tabancası gövdesi <br/>● Anotlanmış yüzeyler kolayca temizlenir <br/>● Ayarlanabilir nozül, fan genişliği, regülatör kontrolü <br/>● Çalışma basıncı: 3 Bar (43Psi)<br/>● Boya haznesi kapasitesi: 1000 ml <br/>● Hava girişi: 1/4'(N)PT <br/>● Meme çapı: 1.8 mm<br/>● Hava tüketimi: 27m3/saat (16cfm)</p><p></p></div><table class="w-auto max-w-full overflow-x-scroll"><tbody><tr><th class="text-left" colspan="2">Boyutlar</th><th class="text-left">
+									Ölçüler</th></tr><tr><td>Ağırlık</td><td>:</td><td>
+										1.6000000238419</td></tr></tbody></table></div>]]></details>
+    <currency>TL</currency>
+    <price1></price1>
+    <tax>20</tax>
+    <barcode>4260122894673</barcode>
+    <brand>TROY</brand>
+    <mainCategory>Havalı Aletler</mainCategory>
+    <category>Boya Tabancası</category>
+    <subCategory></subCategory>
+    <picture1>https://www.duna.com.tr/troy-18619-profesyonel-boya-tabancasi-1-boya-tabancasi-troy-4652288-18-O.jpg</picture1>
+    <picture2>https://www.duna.com.tr/troy-18619-profesyonel-boya-tabancasi-1-boya-tabancasi-troy-4652289-18-O.jpg</picture2>
+    <picture3>https://www.duna.com.tr/troy-18619-profesyonel-boya-tabancasi-1-boya-tabancasi-troy-4652290-18-O.jpg</picture3>
+    <picture4>https://www.duna.com.tr/troy-18619-profesyonel-boya-tabancasi-1-boya-tabancasi-troy-4683567-18-O.jpg</picture4>
+    <picture5>https://www.duna.com.tr/troy-18619-profesyonel-boya-tabancasi-1-boya-tabancasi-troy-4683568-18-O.jpg</picture5>
+    <sourceUrl>https://www.duna.com.tr/troy-18619-profesyonel-boya-tabancasi-1</sourceUrl>
+  </item>
+  <item>
+    <id>1306</id>
+    <code>T 18620</code>
     <label>TROY 18620 Mini Boya Tabancası (1.0mm)</label>
     <stock>413</stock>
-    <details><![CDATA[<h2>TROY 18620 Mini Boya Tabancası (1.0mm)</h2><ul><li>Mini üstten beslemeli havalı boya tabancası</li><li>(HVLP) Yüksek hacim düşük basınç boya tabancası</li><li>Çalışma basıncı: 3 bar (43Psi)</li><li>Boya haznesi kapasitesi: 125 ml</li><li>Meme çapı: 1.0 mm</li></ul>]]></details>
+    <details><![CDATA[<div class="active space-y-4 md:space-y-6" id="product-features"><div class="w-full text-left leading-relaxed [&amp;_p]:mb-2 [&amp;_ul]:list-disc [&amp;_ul]:ps-8 prose-sm lg:prose evolution-detail"><p><strong>TROY 18620 Mini Boya Tabancası (1.0mm)</strong></p><br/><iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="allowfullscreen" frameborder="0" height="315" loading="lazy" src="https://www.youtube.com/embed/DChGNsyfeZI" width="560"></iframe><p>● Mini üstten beslemeli havalı boya tabancası<br/>● (HVLP) Yüksek hacim düşük basınç boya tabancası <br/>● Çevreye karşı daha duyarlı, boya ekonomisi yüksektir<br/>● Su bazlı ve diğer benzer viskoziteli boyalarla kullanılabilir<br/>● Manuel ayarlanabilir nozül setiyle sürekli basınçlı çalışma<br/>● Dayanıklı, uzun ömürlü prinçten mamül hava başlıkları <br/>● Paslanmaz çelik boya iğnesi ve nozülü, anotlanmış boya tabancası gövdesi <br/>● Anotlanmış yüzeyler kolayca temizlenir <br/>● Metal tabanca gövdesi<br/>● Ayarlanabilir nozül, fan genişliği, regülatör kontrolü<br/>● Çalışma basıncı: 3 bar (43Psi)<br/>● Boya haznesi kapasitesi: 125 ml<br/>● Hava girişi: 1/4'(N)PT<br/>● Meme çapı: 1.0 mm<br/>● Hava tüketimi: 15m3/saat</p></div><table class="w-auto max-w-full overflow-x-scroll"><tbody><tr><th class="text-left" colspan="2">Boyutlar</th><th class="text-left">
+									Ölçüler</th></tr><tr><td>Ağırlık</td><td>:</td><td>
+										0.5</td></tr></tbody></table></div>]]></details>
     <currency>TL</currency>
-    <price1>789.05</price1>
+    <price1></price1>
     <tax>20</tax>
     <barcode>4260122894802</barcode>
     <brand>TROY</brand>
     <mainCategory>Havalı Aletler</mainCategory>
     <category>Boya Tabancası</category>
     <subCategory></subCategory>
-    <picture1>https://www.duna.com.tr/troy-18620-mini-boya-tabancasi-2871-boya-tabancasi-troy-4413842-28-O.jpg</picture1>
-    <picture2>https://www.duna.com.tr/troy-18620-mini-boya-tabancasi-2871-boya-tabancasi-troy-4413841-28-O.jpg</picture2>
-    <picture3></picture3>
-    <picture4></picture4>
-    <sourceUrl>https://www.duna.com.tr/troy-18620-mini-boya-tabancasi-2871</sourceUrl>
+    <picture1>https://www.duna.com.tr/troy-18620-mini-boya-tabancasi-1-boya-tabancasi-troy-4683571-13-O.jpg</picture1>
+    <picture2>https://www.duna.com.tr/troy-18620-mini-boya-tabancasi-1-boya-tabancasi-troy-4683572-13-O.jpg</picture2>
+    <picture3>https://www.duna.com.tr/troy-18620-mini-boya-tabancasi-1-boya-tabancasi-troy-4683573-13-O.jpg</picture3>
+    <picture4>https://www.duna.com.tr/troy-18620-mini-boya-tabancasi-1-boya-tabancasi-troy-4413825-13-O.jpg</picture4>
+    <picture5>https://www.duna.com.tr/troy-18620-mini-boya-tabancasi-1-boya-tabancasi-troy-4413826-13-O.jpg</picture5>
+    <sourceUrl>https://www.duna.com.tr/troy-18620-mini-boya-tabancasi-1</sourceUrl>
   </item>
   <item>
-    <id>TEST-2</id>
-    <code>TEST-2</code>
-    <label>Duna XML İkinci Test Ürünü</label>
-    <stock>1</stock>
-    <details><![CDATA[<p>Entegra ürün düğümü algılama testi için geçici ikinci kayıttır.</p>]]></details>
+    <id>1305</id>
+    <code>T 18640</code>
+    <label>TROY 18640 Profesyonel Boya Tabancası (1.4mm)</label>
+    <stock>223</stock>
+    <details><![CDATA[<div class="active space-y-4 md:space-y-6" id="product-features"><div class="w-full text-left leading-relaxed [&amp;_p]:mb-2 [&amp;_ul]:list-disc [&amp;_ul]:ps-8 prose-sm lg:prose evolution-detail"><p><strong>TROY 18640 Profesyonel Boya Tabancası (1.4mm)</strong></p><p>● Profesyonel kalite üstten beslemeli havalı boya tabancası<br/>● Selüloz bazlı, metalik, sentetik ve diğer benzer viskoziteli boyalarla kullanılabilir<br/>● Cilali, paslanmaz metal tabanca gövdesi<br/>● Kolay temizlenir<br/>● Ayarlanabilir nozül, fan genişliği, regülatör kontrolü<br/>● Çalışma basıncı: 3 bar<br/>● Kapasite: 600 ml<br/>● Hava girişi: 1/4'(N)PT<br/>● Meme çapı: 1.4 mm</p></div><table class="w-auto max-w-full overflow-x-scroll"><tbody><tr><th class="text-left" colspan="2">Boyutlar</th><th class="text-left">
+									Ölçüler</th></tr><tr><td>Ağırlık</td><td>:</td><td>
+										1.3999999761581</td></tr></tbody></table></div>]]></details>
     <currency>TL</currency>
-    <price1>1.00</price1>
+    <price1></price1>
     <tax>20</tax>
-    <barcode>TEST000000002</barcode>
+    <barcode>4260122894840</barcode>
     <brand>TROY</brand>
     <mainCategory>Havalı Aletler</mainCategory>
     <category>Boya Tabancası</category>
     <subCategory></subCategory>
-    <picture1></picture1>
+    <picture1>https://www.duna.com.tr/troy-18640-profesyonel-boya-tabancasi-1-boya-tabancasi-troy-4681904-13-O.jpg</picture1>
+    <picture2>https://www.duna.com.tr/troy-18640-profesyonel-boya-tabancasi-1-boya-tabancasi-troy-4681905-13-O.jpg</picture2>
+    <picture3></picture3>
+    <picture4></picture4>
+    <picture5></picture5>
+    <sourceUrl>https://www.duna.com.tr/troy-18640-profesyonel-boya-tabancasi-1</sourceUrl>
+  </item>
+  <item>
+    <id>1304</id>
+    <code>T 18648</code>
+    <label>TROY 18648 Profesyonel Boya Tabancası (1.8mm)</label>
+    <stock>166</stock>
+    <details><![CDATA[<div class="active space-y-4 md:space-y-6" id="product-features"><div class="w-full text-left leading-relaxed [&amp;_p]:mb-2 [&amp;_ul]:list-disc [&amp;_ul]:ps-8 prose-sm lg:prose evolution-detail"><p><strong>TROY 18648 Profesyonel Boya Tabancası (1.8mm)</strong></p><p>● Profesyonel kalite üstten beslemeli boya tabancası<br/>● Selüloz bazlı, metalik, sentetik ve diğer benzer viskoziteli boyalarla kullanılabilir<br/>● Cilali, paslanmaz metal tabanca gövdesi<br/>● Kolay temizlenir<br/>● Ayarlanabilir nozül, fan genişliği, regülatör kontrolü<br/>● Çalışma basıncı: 3 bar<br/>● Kapasite: 600 ml<br/>● Hava girişi: 1/4'(N)PT<br/>● Meme çapı: 1.8 mm</p></div><table class="w-auto max-w-full overflow-x-scroll"><tbody><tr><th class="text-left" colspan="2">Boyutlar</th><th class="text-left">
+									Ölçüler</th></tr><tr><td>Ağırlık</td><td>:</td><td>
+										1.8999999761581</td></tr></tbody></table></div>]]></details>
+    <currency>TL</currency>
+    <price1></price1>
+    <tax>20</tax>
+    <barcode>4260122894444</barcode>
+    <brand>TROY</brand>
+    <mainCategory>Havalı Aletler</mainCategory>
+    <category>Boya Tabancası</category>
+    <subCategory></subCategory>
+    <picture1>https://www.duna.com.tr/troy-18648-profesyonel-boya-tabancasi-1-boya-tabancasi-troy-4683159-13-O.jpg</picture1>
+    <picture2>https://www.duna.com.tr/troy-18648-profesyonel-boya-tabancasi-1-boya-tabancasi-troy-4677828-13-O.jpg</picture2>
+    <picture3>https://www.duna.com.tr/troy-18648-profesyonel-boya-tabancasi-1-boya-tabancasi-troy-4677829-13-O.jpg</picture3>
+    <picture4>https://www.duna.com.tr/troy-18648-profesyonel-boya-tabancasi-1-boya-tabancasi-troy-4683160-13-O.jpg</picture4>
+    <picture5>https://www.duna.com.tr/troy-18648-profesyonel-boya-tabancasi-1-boya-tabancasi-troy-4683161-13-O.jpg</picture5>
+    <sourceUrl>https://www.duna.com.tr/troy-18648-profesyonel-boya-tabancasi-1</sourceUrl>
+  </item>
+  <item>
+    <id>1303</id>
+    <code>T 18670</code>
+    <label>TROY 18670 Boya Tabancası (1.5mm)</label>
+    <stock>307</stock>
+    <details><![CDATA[<div class="active space-y-4 md:space-y-6" id="product-features"><div class="w-full text-left leading-relaxed [&amp;_p]:mb-2 [&amp;_ul]:list-disc [&amp;_ul]:ps-8 prose-sm lg:prose evolution-detail"><p><strong>TROY 18670 Boya Tabancası (1.5mm)</strong></p><br/><p>● Üstten beslemeli havalı boya tabancası<br/>● Alüminyum boya hazneli<br/>● Selüloz bazlı, metalik, sentetik ve diğer benzer viskoziteli boyalarla kullanılabilir<br/>● Metal tabanca gövdesi<br/>● Ayarlanabilir nozül, fan genişliği, regülatör kontrolü<br/>● Çalışma basıncı: 3,5 Bar<br/>● Hava tüketimi: 0,125m3/dakika<br/>● Boya haznesi kapasitesi: 600 ml<br/>● Hava girişi: 1/4'(N)PT<br/>● Meme çapı: 1.5 mm</p></div><table class="w-auto max-w-full overflow-x-scroll"><tbody><tr><th class="text-left" colspan="2">Boyutlar</th><th class="text-left">
+									Ölçüler</th></tr><tr><td>Ağırlık</td><td>:</td><td>
+										0.80000001192093</td></tr></tbody></table></div>]]></details>
+    <currency>TL</currency>
+    <price1></price1>
+    <tax>20</tax>
+    <barcode>4260122894772</barcode>
+    <brand>TROY</brand>
+    <mainCategory>Havalı Aletler</mainCategory>
+    <category>Boya Tabancası</category>
+    <subCategory></subCategory>
+    <picture1>https://www.duna.com.tr/troy-18670-boya-tabancasi-1-boya-tabancasi-troy-4683546-13-O.jpg</picture1>
+    <picture2>https://www.duna.com.tr/troy-18670-boya-tabancasi-1-boya-tabancasi-troy-4680985-13-O.jpg</picture2>
+    <picture3>https://www.duna.com.tr/troy-18670-boya-tabancasi-1-boya-tabancasi-troy-4680986-13-O.jpg</picture3>
+    <picture4>https://www.duna.com.tr/troy-18670-boya-tabancasi-1-boya-tabancasi-troy-4683547-13-O.jpg</picture4>
+    <picture5>https://www.duna.com.tr/troy-18670-boya-tabancasi-1-boya-tabancasi-troy-4683548-13-O.jpg</picture5>
+    <sourceUrl>https://www.duna.com.tr/troy-18670-boya-tabancasi-1</sourceUrl>
+  </item>
+  <item>
+    <id>1302</id>
+    <code>T 18671</code>
+    <label>TROY 18671 Boya Tabancası (1.5mm)</label>
+    <stock>199</stock>
+    <details><![CDATA[<div class="active space-y-4 md:space-y-6" id="product-features"><div class="w-full text-left leading-relaxed [&amp;_p]:mb-2 [&amp;_ul]:list-disc [&amp;_ul]:ps-8 prose-sm lg:prose evolution-detail"><p><strong>TROY 18671 Alttan Beslemeli Boya Tabancası, 1,5mm Nozül</strong></p><br/><p><iframe height="315" src="https://www.youtube.com/embed/68L28527NEc" width="560"></iframe></p><p>● Alttan beslemeli boya tabancası<br/>● Alüminyum boya hazneli<br/>● Selüloz bazlı, metalik, sentetik ve diğer benzer viskoziteli boyalarla kullanılabilir<br/>● Metal tabanca gövdesi<br/>● Kolay temizlenir<br/>● Ayarlanabilir nozül, fan genişliği, regülatör kontrolü<br/>● Çalışma basıncı: 3.5 Bar<br/>● Kapasite: 1000 ml<br/>● Hava girişi: 1/4'(N)PT<br/>● Meme çapı: 1.5 mm</p></div><table class="w-auto max-w-full overflow-x-scroll"><tbody><tr><th class="text-left" colspan="2">Boyutlar</th><th class="text-left">
+									Ölçüler</th></tr><tr><td>Ağırlık</td><td>:</td><td>
+										1.75</td></tr></tbody></table></div>]]></details>
+    <currency>TL</currency>
+    <price1></price1>
+    <tax>20</tax>
+    <barcode>4260122894789</barcode>
+    <brand>TROY</brand>
+    <mainCategory>Havalı Aletler</mainCategory>
+    <category>Boya Tabancası</category>
+    <subCategory></subCategory>
+    <picture1>https://www.duna.com.tr/troy-18671-boya-tabancasi-1-boya-tabancasi-troy-4682976-13-O.jpg</picture1>
+    <picture2>https://www.duna.com.tr/troy-18671-boya-tabancasi-1-boya-tabancasi-troy-4674648-13-O.jpg</picture2>
+    <picture3>https://www.duna.com.tr/troy-18671-boya-tabancasi-1-boya-tabancasi-troy-4674649-13-O.jpg</picture3>
+    <picture4>https://www.duna.com.tr/troy-18671-boya-tabancasi-1-boya-tabancasi-troy-4674650-13-O.jpg</picture4>
+    <picture5>https://www.duna.com.tr/troy-18671-boya-tabancasi-1-boya-tabancasi-troy-4682977-13-O.jpg</picture5>
+    <sourceUrl>https://www.duna.com.tr/troy-18671-boya-tabancasi-1</sourceUrl>
+  </item>
+  <item>
+    <id>1301</id>
+    <code>T 18673</code>
+    <label>TROY 18673 Boya Tabancası (2.5mm)</label>
+    <stock>80</stock>
+    <details><![CDATA[<div class="active space-y-4 md:space-y-6" id="product-features"><div class="w-full text-left leading-relaxed [&amp;_p]:mb-2 [&amp;_ul]:list-disc [&amp;_ul]:ps-8 prose-sm lg:prose evolution-detail"><p><strong>TROY 18673 Boya Tabancası (2.5mm)</strong></p><br/><p>● Üstten beslemeli havalı boya tabancası<br/>● Alüminyum boya hazneli<br/>● Selüloz bazlı, metalik, sentetik ve diğer benzer viskoziteli boyalarla kullanılabilir<br/>● Metal tabanca gövdesi<br/>● Ayarlanabilir nozül, fan genişliği, regülatör kontrolü<br/>● Çalışma basıncı: 3,5 Bar<br/>● Kapasite: 600 ml<br/>● Hava girişi: 1/4'(N)PT<br/>● Meme çapı: 2.5 mm</p></div><table class="w-auto max-w-full overflow-x-scroll"><tbody><tr><th class="text-left" colspan="2">Boyutlar</th><th class="text-left">
+									Ölçüler</th></tr><tr><td>Ağırlık</td><td>:</td><td>
+										0.85000002384186</td></tr></tbody></table></div>]]></details>
+    <currency>TL</currency>
+    <price1></price1>
+    <tax>20</tax>
+    <barcode>4260122899906</barcode>
+    <brand>TROY</brand>
+    <mainCategory>Havalı Aletler</mainCategory>
+    <category>Boya Tabancası</category>
+    <subCategory></subCategory>
+    <picture1>https://www.duna.com.tr/troy-18673-boya-tabancasi-2-boya-tabancasi-troy-4682484-13-O.jpg</picture1>
+    <picture2>https://www.duna.com.tr/troy-18673-boya-tabancasi-2-boya-tabancasi-troy-4682485-13-O.jpg</picture2>
+    <picture3>https://www.duna.com.tr/troy-18673-boya-tabancasi-2-boya-tabancasi-troy-4682486-13-O.jpg</picture3>
+    <picture4>https://www.duna.com.tr/troy-18673-boya-tabancasi-2-boya-tabancasi-troy-4682487-13-O.jpg</picture4>
+    <picture5>https://www.duna.com.tr/troy-18673-boya-tabancasi-2-boya-tabancasi-troy-4682488-13-O.jpg</picture5>
+    <sourceUrl>https://www.duna.com.tr/troy-18673-boya-tabancasi-2</sourceUrl>
+  </item>
+  <item>
+    <id>1300</id>
+    <code>T 18678</code>
+    <label>TROY 18678 Boya Tabancası (1.8mm)</label>
+    <stock>141</stock>
+    <details><![CDATA[<div class="active space-y-4 md:space-y-6" id="product-features"><div class="w-full text-left leading-relaxed [&amp;_p]:mb-2 [&amp;_ul]:list-disc [&amp;_ul]:ps-8 prose-sm lg:prose evolution-detail"><p><strong>TROY 18678 Boya Tabancası (1.8mm)</strong></p><p>● Alttan beslemeli boya tabancası<br/>● Alüminyum boya hazneli<br/>● Selüloz bazlı, metalik, sentetik ve diğer benzer viskoziteli boyalarla kullanılabilir<br/>● Metal tabanca gövdesi<br/>● Kolay temizlenir<br/>● Ayarlanabilir nozül, fan genişliği, regülatör kontrolü<br/>● Çalışma basıncı: 3.5 Bar<br/>● Kapasite: 1000 ml<br/>● Hava girişi: 1/4'(N)PT<br/>● Meme çapı: 1.8 mm</p></div><table class="w-auto max-w-full overflow-x-scroll"><tbody><tr><th class="text-left" colspan="2">Boyutlar</th><th class="text-left">
+									Ölçüler</th></tr><tr><td>Ağırlık</td><td>:</td><td>
+										1</td></tr></tbody></table></div>]]></details>
+    <currency>TL</currency>
+    <price1></price1>
+    <tax>20</tax>
+    <barcode>4260122895892</barcode>
+    <brand>TROY</brand>
+    <mainCategory>Havalı Aletler</mainCategory>
+    <category>Boya Tabancası</category>
+    <subCategory></subCategory>
+    <picture1>https://www.duna.com.tr/troy-18678-boya-tabancasi-1-boya-tabancasi-troy-4683074-13-O.jpg</picture1>
+    <picture2>https://www.duna.com.tr/troy-18678-boya-tabancasi-1-boya-tabancasi-troy-4676258-13-O.jpg</picture2>
+    <picture3>https://www.duna.com.tr/troy-18678-boya-tabancasi-1-boya-tabancasi-troy-4676259-13-O.jpg</picture3>
+    <picture4>https://www.duna.com.tr/troy-18678-boya-tabancasi-1-boya-tabancasi-troy-4683075-13-O.jpg</picture4>
+    <picture5>https://www.duna.com.tr/troy-18678-boya-tabancasi-1-boya-tabancasi-troy-4683076-13-O.jpg</picture5>
+    <sourceUrl>https://www.duna.com.tr/troy-18678-boya-tabancasi-1</sourceUrl>
+  </item>
+  <item>
+    <id>1298</id>
+    <code>T 18690</code>
+    <label>TROY 18690 Portatif Elektrikli Sprey Boya Tabancası, 800W</label>
+    <stock>87</stock>
+    <details><![CDATA[<div class="active space-y-4 md:space-y-6" id="product-features"><div class="w-full text-left leading-relaxed [&amp;_p]:mb-2 [&amp;_ul]:list-disc [&amp;_ul]:ps-8 prose-sm lg:prose evolution-detail"><p><strong>TROY 18690 Portatif Elektrikli Boya Püskürtme Tabancası</strong></p><br/><iframe allow="accelerometer; autoplay; clipboard-write; encrypted-media; gyroscope; picture-in-picture" allowfullscreen="" frameborder="0" height="315" src="https://www.youtube.com/embed/81cIS7msaqs" title="YouTube video player" width="560"></iframe><div> </div><div>● Ahşap ve metalde detay gerektiren uygulamalarda kullanmak için ideal elektrikli boya tabancası<br/>● Ayarlanabilir meme sayesinde yatay, dikey, dairesel boya atabilme<br/>● Boya akışını düzenleyen ayar düğmesi<br/>● Çalışırken kolay taşımak için omuz askısı<br/>● Uzun süreli kullanıma uygun ergonomik yumuşak kavrayışlı tutacak tasarımı<br/>● Aksesuarlar: <br/>● 1 x viskozite ölçüm kabı<br/>● 1 x meme temizleme iğnesi<br/>● Güç: 800W<br/>● Voltaj: 220-240V, 50/60Hz<br/>● Akış hızı: 1100ml/dak <br/>● Maksimum viskozite: 60DIN-s<br/>● Meme çapı: 2,5mm<br/>● Hava basıncı: 0,1-0,3 Bar<br/>● Boya kap hacmi: 900ml<br/>● Hortum uzunluğu: 1,8m</div><div></div><div></div><div><img src="about:/userfiles/editor/image/T-18690--BOYA-TABANCAS-800x.png" style="HEIGHT: 402px; WIDTH: 800px"/></div><div></div></div><table class="w-auto max-w-full overflow-x-scroll"><tbody><tr><th class="text-left" colspan="2">Boyutlar</th><th class="text-left">
+									Ölçüler</th></tr><tr><td>Ağırlık</td><td>:</td><td>
+										3.1500000953674</td></tr></tbody></table></div>]]></details>
+    <currency>TL</currency>
+    <price1></price1>
+    <tax>20</tax>
+    <barcode>4260122899692</barcode>
+    <brand>TROY</brand>
+    <mainCategory>Havalı Aletler</mainCategory>
+    <category>Boya Tabancası</category>
+    <subCategory></subCategory>
+    <picture1>https://www.duna.com.tr/troy-18690-portatif-elektrikli-sprey-boya-tabancasi-800w-boya-tabancasi-troy-4681624-12-O.jpg</picture1>
+    <picture2>https://www.duna.com.tr/troy-18690-portatif-elektrikli-sprey-boya-tabancasi-800w-boya-tabancasi-troy-4681625-12-O.png</picture2>
+    <picture3>https://www.duna.com.tr/troy-18690-portatif-elektrikli-sprey-boya-tabancasi-800w-boya-tabancasi-troy-4681626-12-O.png</picture3>
+    <picture4>https://www.duna.com.tr/troy-18690-portatif-elektrikli-sprey-boya-tabancasi-800w-boya-tabancasi-troy-4681627-12-O.png</picture4>
+    <picture5></picture5>
+    <sourceUrl>https://www.duna.com.tr/troy-18690-portatif-elektrikli-sprey-boya-tabancasi-800w</sourceUrl>
+  </item>
+  <item>
+    <id>1729</id>
+    <code>T 2009</code>
+    <label>TROY 2009 Yedek Boya Haznesi</label>
+    <stock>1944</stock>
+    <details><![CDATA[<div class="active space-y-4 md:space-y-6" id="product-features"><div class="w-full text-left leading-relaxed [&amp;_p]:mb-2 [&amp;_ul]:list-disc [&amp;_ul]:ps-8 prose-sm lg:prose evolution-detail"><p><strong>TROY 2009 Yedek Boya Haznesi</strong></p><p>● Yedek PVC boya haznesi<br/>● Üstten beslemeli boya tabancaları için<br/>● Kapasite: 600ml</p></div><table class="w-auto max-w-full overflow-x-scroll"><tbody><tr><th class="text-left" colspan="2">Boyutlar</th><th class="text-left">
+									Ölçüler</th></tr><tr><td>Ağırlık</td><td>:</td><td>
+										0.25</td></tr></tbody></table></div>]]></details>
+    <currency>TL</currency>
+    <price1></price1>
+    <tax>20</tax>
+    <barcode>4260122898510</barcode>
+    <brand>TROY</brand>
+    <mainCategory>Havalı Aletler</mainCategory>
+    <category>Boya Tabancası</category>
+    <subCategory></subCategory>
+    <picture1>https://www.duna.com.tr/troy-2009-yedek-boya-haznesi-boya-tabancasi-troy-4681957-17-O.jpg</picture1>
+    <picture2>https://www.duna.com.tr/troy-2009-yedek-boya-haznesi-boya-tabancasi-troy-4681958-17-O.jpg</picture2>
+    <picture3></picture3>
+    <picture4></picture4>
+    <picture5></picture5>
+    <sourceUrl>https://www.duna.com.tr/troy-2009-yedek-boya-haznesi</sourceUrl>
+  </item>
+  <item>
+    <id>1307</id>
+    <code>T 18617</code>
+    <label>TROY 18617 Profesyonel Boya Tabancası (1.4mm)</label>
+    <stock>0</stock>
+    <details><![CDATA[<div class="active space-y-4 md:space-y-6" id="product-features"><div class="w-full text-left leading-relaxed [&amp;_p]:mb-2 [&amp;_ul]:list-disc [&amp;_ul]:ps-8 prose-sm lg:prose evolution-detail"><p><strong>TROY 18617 Profesyonel Boya Tabancası (1.4mm)</strong></p><br/><p>● Profesyonel kalite üstten beslemeli boya tabancası<br/>● Yüksek kaliteli malzeme ile CNC tezgahlarında işlenmiş, üstün atomizasyon kapasitelidir<br/>● Çevreye karşı daha duyarlı, boya ekonomisi yüksektir<br/>● Kullanım ömrü amatör seri tabancalardan iki kat uzundur.<br/>● Selüloz bazlı, metalik, sentetik ve diğer benzer viskoziteli boyalarla kullanılabilir<br/>● Cilali, paslanmaz metal tabanca gövdesi<br/>● Kolay temizlenir<br/>● Ayarlanabilir nozül, fan genişliği, regülatör kontrolü<br/>● Çalışma basıncı: 3 bar (43Psi)<br/>● Kapasite: 600 ml<br/>● Hava girişi: 1/4'(N)PT<br/>● Meme çapı: 1.4 mm<br/>● Hava tüketimi: 27m3/saat (16cfm)</p></div><table class="w-auto max-w-full overflow-x-scroll"><tbody><tr><th class="text-left" colspan="2">Boyutlar</th><th class="text-left">
+									Ölçüler</th></tr><tr><td>Ağırlık</td><td>:</td><td>
+										1.2000000476837</td></tr></tbody></table></div>]]></details>
+    <currency>TL</currency>
+    <price1></price1>
+    <tax>20</tax>
+    <barcode>4260122894642</barcode>
+    <brand>TROY</brand>
+    <mainCategory>Havalı Aletler</mainCategory>
+    <category>Boya Tabancası</category>
+    <subCategory></subCategory>
+    <picture1>https://www.duna.com.tr/troy-18617-profesyonel-boya-tabancasi-1-boya-tabancasi-troy-4626011-13-O.jpg</picture1>
+    <picture2>https://www.duna.com.tr/troy-18617-profesyonel-boya-tabancasi-1-boya-tabancasi-troy-4626012-13-O.jpg</picture2>
+    <picture3></picture3>
+    <picture4></picture4>
+    <picture5></picture5>
+    <sourceUrl>https://www.duna.com.tr/troy-18617-profesyonel-boya-tabancasi-1</sourceUrl>
+  </item>
+  <item>
+    <id>1308</id>
+    <code>T 2000</code>
+    <label>TROY 2000 Profesyonel Boya Tabancası (1.7mm)</label>
+    <stock>0</stock>
+    <details><![CDATA[<div class="active space-y-4 md:space-y-6" id="product-features"><div class="w-full text-left leading-relaxed [&amp;_p]:mb-2 [&amp;_ul]:list-disc [&amp;_ul]:ps-8 prose-sm lg:prose evolution-detail"><p><strong>TROY 2000 Profesyonel Boya Tabancası</strong></p><br/><p>● Profesyonel kalite yüksek hacimli düşük basınçlı üstten beslemeli boya tabancası<br/>● Selüloz bazlı, metalik, sentetik ve diğer benzer viskoziteli boyalarla kullanılabilir<br/>● Cilali, paslanmaz metal tabanca gövdesi<br/>● Kolay temizlenir<br/>● Ayarlanabilir nozül, fan genişliği, regülatör kontrolü<br/>● Çalışma basıncı: 3 bar (43Psi)<br/>● Hava Tüketimi: 25,5m3/saat (15cfm)<br/>● Kapasite: 600 ml<br/>● Hava girişi: 1/4'(N)PT<br/>● Meme çapı: 1.7 mm</p></div><table class="w-auto max-w-full overflow-x-scroll"><tbody><tr><th class="text-left" colspan="2">Boyutlar</th><th class="text-left">
+									Ölçüler</th></tr><tr><td>Ağırlık</td><td>:</td><td>
+										1.3500000238419</td></tr></tbody></table></div>]]></details>
+    <currency>TL</currency>
+    <price1></price1>
+    <tax>20</tax>
+    <barcode>4260122898312</barcode>
+    <brand>TROY</brand>
+    <mainCategory>Havalı Aletler</mainCategory>
+    <category>Boya Tabancası</category>
+    <subCategory></subCategory>
+    <picture1>https://www.duna.com.tr/troy-2000-profesyonel-boya-tabancasi-1-boya-tabancasi-troy-4625682-13-O.jpg</picture1>
     <picture2></picture2>
     <picture3></picture3>
     <picture4></picture4>
-    <sourceUrl></sourceUrl>
+    <picture5></picture5>
+    <sourceUrl>https://www.duna.com.tr/troy-2000-profesyonel-boya-tabancasi-1</sourceUrl>
   </item>
 </root>
