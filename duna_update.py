@@ -939,100 +939,74 @@ def kart_fiyati_bul(
 def detay_bilgileri(url):
 
     try:
-
-        html_text = sayfa_getir(
-            url,
-            params={
-                "language": "tr"
-            }
-        )
-
+        html_text = sayfa_getir(url, params={"language": "tr"})
     except Exception as exc:
+        print("Detay sayfasi alinamadi:", url, exc)
+        return "", "", []
 
-        print(
-            "Detay sayfasi alinamadi:",
-            url,
-            exc
-        )
+    soup = BeautifulSoup(html_text, "html.parser")
 
-        return "", []
-
-    soup = BeautifulSoup(
-        html_text,
-        "html.parser"
-    )
+    # Duna'nin kullaniciya gosterdigi Turkce urun basligini al.
+    detail_name = ""
+    for selector in [
+        "#product-title",
+        "h1#product-title",
+        "h1[itemprop='name']",
+        "h1.product-title",
+        "h1"
+    ]:
+        node = soup.select_one(selector)
+        if node:
+            candidate = temizle(node.get_text(" ", strip=True))
+            if candidate:
+                detail_name = candidate
+                break
 
     description = ""
 
-    selectors = [
+    for selector in [
         "#product-features",
         ".product-detail-description",
         ".product-description",
         ".productDetailDescription",
         "[itemprop='description']",
-    ]
-
-    for selector in selectors:
-
-        node = soup.select_one(
-            selector
-        )
-
-        if (
-            node
-            and len(
-                node.get_text(
-                    " ",
-                    strip=True
-                )
-            ) > 30
-        ):
-
+    ]:
+        node = soup.select_one(selector)
+        if node and len(node.get_text(" ", strip=True)) > 30:
             description = str(node)
             break
 
-    # Duna'da İngilizce kalan açıklama/teknik metin varsa Türkçeleştir.
+    # Duna Turkce sayfada teknik metni Ingilizce biraktiysa yedek ceviri.
     if description:
         description = html_turkcelestir(description)
 
     images = []
 
-    for img in soup.find_all(
-        "img"
-    ):
-
-        src = (
+    for img in soup.find_all("img"):
+        image_src = (
             img.get("data-src")
             or img.get("data-original")
             or img.get("src")
         )
 
-        if not src:
+        if not image_src:
             continue
 
-        src = html.unescape(src)
+        image_src = html.unescape(image_src)
 
-        if src.startswith("//"):
-            src = "https:" + src
-
-        elif src.startswith("/"):
-            src = BASE_URL + src
+        if image_src.startswith("//"):
+            image_src = "https:" + image_src
+        elif image_src.startswith("/"):
+            image_src = BASE_URL + image_src
 
         if (
-            "duna.com.tr" in src
-            and (
-                "-O." in src
-                or "-B." in src
-            )
-            and src not in images
+            "duna.com.tr" in image_src
+            and ("-O." in image_src or "-B." in image_src)
+            and image_src not in images
         ):
+            images.append(image_src)
 
-            images.append(src)
-
-    return (
-        description,
-        images[:5]
-    )
+    return detail_name, description, images[:5]
 
 
 # =========================================================
@@ -1079,8 +1053,6 @@ def urun_xml_ekle(
     name = temizle(
         product.get("name")
     )
-
-    name = turkceye_cevir(name)
 
     barcode = temizle(
         product.get("barcode")
@@ -1146,12 +1118,18 @@ def urun_xml_ekle(
             f"{name}"
         )
 
-    # AÇIKLAMA + GÖRSEL
-    description, detail_images = (
+    # TURKCE URUN ADI + ACIKLAMA + GORSEL
+    detail_name, description, detail_images = (
         detay_bilgileri(
             product_url
         )
     )
+
+    # PRODUCT_DATA Ingilizce olsa bile Duna'nin Turkce detay basligi oncelikli.
+    if detail_name:
+        name = detail_name
+    else:
+        name = turkceye_cevir(name)
 
     images = []
 
