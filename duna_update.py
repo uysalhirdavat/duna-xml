@@ -93,20 +93,223 @@ def tl_fiyat_cevir(value):
 # DUNA BAYİ GİRİŞİ
 # =========================================================
 
+def tsoft_turkce_aktif_et():
+    """
+    Duna'nın kullandığı T-Soft dil mekanizmasını doğrudan kullanır.
+    Site üzerindeki dil seçici de aynı servis ailesini kullanır.
+    """
+
+    # 1) Dil + para birimi yönlendirmesi
+    redirect_url = (
+        BASE_URL
+        + "/srv/service/language/redirect/tr/TL"
+    )
+
+    try:
+        response = session.get(
+            redirect_url,
+            headers={
+                "Referer": BASE_URL + "/",
+                "X-Requested-With": "XMLHttpRequest",
+            },
+            timeout=30,
+            allow_redirects=True,
+        )
+        response.raise_for_status()
+    except Exception as exc:
+        print(
+            "UYARI: T-Soft dil yonlendirmesi basarisiz:",
+            exc
+        )
+
+    # 2) Aktif dili kontrol et
+    try:
+        check = session.get(
+            BASE_URL
+            + "/srv/service/language/get-language/",
+            headers={
+                "Referer": BASE_URL + "/",
+                "X-Requested-With": "XMLHttpRequest",
+            },
+            timeout=30,
+            allow_redirects=True,
+        )
+        check.raise_for_status()
+
+        text = temizle(
+            check.text
+        )
+
+        print(
+            "T-Soft aktif dil cevabi:",
+            text[:200]
+        )
+
+    except Exception as exc:
+        print(
+            "UYARI: T-Soft aktif dil kontrolu basarisiz:",
+            exc
+        )
+
+
+def tsoft_urun_turkce_url(
+    product_id,
+    product_url
+):
+    """
+    Duna/T-Soft'un kendi ürün dil değiştirme servisini kullanır:
+    /srv/service/language/change/tr/product/{ID}/
+
+    Servisin döndürdüğü Türkçe URL bulunursa onu kullanır.
+    URL bulunamazsa servis yine de oturum dilini TR yapmış olacağından
+    mevcut ürün URL'si tekrar Türkçe oturumla açılır.
+    """
+
+    change_url = (
+        BASE_URL
+        + "/srv/service/language/change/tr/product/"
+        + quote(
+            str(product_id),
+            safe=""
+        )
+        + "/"
+    )
+
+    try:
+        response = session.get(
+            change_url,
+            headers={
+                "Referer": product_url,
+                "X-Requested-With": "XMLHttpRequest",
+            },
+            timeout=30,
+            allow_redirects=True,
+        )
+        response.raise_for_status()
+
+        # Redirect sonunda gerçek ürün URL'sine geldiysek kullan.
+        if (
+            response.url
+            and "srv/service/language/" not in response.url
+            and response.url.startswith(BASE_URL)
+        ):
+            return response.url
+
+        # JSON içinden URL/redirect bulmayı dene.
+        try:
+            data = response.json()
+
+            def url_ara(obj):
+                if isinstance(obj, str):
+                    value = obj.strip()
+
+                    if value.startswith("http"):
+                        return value
+
+                    if value.startswith("/"):
+                        return urljoin(
+                            BASE_URL,
+                            value
+                        )
+
+                if isinstance(obj, dict):
+                    for key in [
+                        "url",
+                        "redirect",
+                        "redirect_url",
+                        "href",
+                        "link",
+                        "location"
+                    ]:
+                        if key in obj:
+                            found = url_ara(
+                                obj[key]
+                            )
+
+                            if found:
+                                return found
+
+                    for value in obj.values():
+                        found = url_ara(
+                            value
+                        )
+
+                        if found:
+                            return found
+
+                if isinstance(obj, list):
+                    for value in obj:
+                        found = url_ara(
+                            value
+                        )
+
+                        if found:
+                            return found
+
+                return ""
+
+            found_url = url_ara(
+                data
+            )
+
+            if found_url:
+                return found_url
+
+        except Exception:
+            pass
+
+        # Düz metin içinde Duna ürün URL'si varsa kullan.
+        match = re.search(
+            r'https?://www\.duna\.com\.tr/[^\s"\'<>]+',
+            response.text
+        )
+
+        if match:
+            return html.unescape(
+                match.group(0)
+            )
+
+    except Exception as exc:
+        print(
+            "UYARI: Urun Turkce dil servisi basarisiz |",
+            product_id,
+            "|",
+            exc
+        )
+
+    return product_url
+
+
 def duna_giris_yap():
 
-    username = os.environ.get("DUNA_USERNAME", "").strip()
-    password = os.environ.get("DUNA_PASSWORD", "")
+    username = os.environ.get(
+        "DUNA_USERNAME",
+        ""
+    ).strip()
+
+    password = os.environ.get(
+        "DUNA_PASSWORD",
+        ""
+    )
 
     if not username or not password:
         raise RuntimeError(
             "DUNA_USERNAME veya DUNA_PASSWORD GitHub Secret bulunamadi."
         )
 
-    giris_sayfasi = BASE_URL + "/bayi-girisi-sayfasi"
+    # Duna'yı en baştan T-Soft'un kendi Türkçe dil oturumuna geçir.
+    tsoft_turkce_aktif_et()
+
+    giris_sayfasi = (
+        BASE_URL
+        + "/bayi-girisi-sayfasi"
+    )
 
     r = session.get(
         giris_sayfasi,
+        params={
+            "language": "tr"
+        },
         timeout=30,
         allow_redirects=True
     )
@@ -116,7 +319,10 @@ def duna_giris_yap():
     login_url = (
         BASE_URL
         + "/srv/customer/signin/email/"
-        + quote(username, safe="")
+        + quote(
+            username,
+            safe=""
+        )
         + "?language=tr"
     )
 
@@ -137,18 +343,32 @@ def duna_giris_yap():
 
     response.raise_for_status()
 
+    # Girişten sonra dili tekrar TR'ye sabitle.
+    tsoft_turkce_aktif_et()
+
     check = session.get(
-        BASE_URL + "/uye-siparisleri",
+        BASE_URL
+        + "/uye-siparisleri",
+        params={
+            "language": "tr"
+        },
         timeout=30,
         allow_redirects=True
     )
 
     check.raise_for_status()
 
-    if "uye-siparisleri" not in check.url.lower():
-        raise RuntimeError("Duna bayi girisi basarisiz.")
+    if (
+        "uye-siparisleri"
+        not in check.url.lower()
+    ):
+        raise RuntimeError(
+            "Duna bayi girisi basarisiz."
+        )
 
-    print("Duna bayi girisi basarili.")
+    print(
+        "Duna bayi girisi basarili."
+    )
 
 
 # =========================================================
@@ -162,10 +382,19 @@ def sayfa_getir(url, referer=None, params=None):
     if referer:
         headers["Referer"] = referer
 
+    final_params = dict(
+        params or {}
+    )
+
+    final_params.setdefault(
+        "language",
+        "tr"
+    )
+
     response = session.get(
         url,
         headers=headers or None,
-        params=params,
+        params=final_params,
         timeout=45,
         allow_redirects=True
     )
@@ -835,39 +1064,47 @@ def kart_fiyati_bul(
 # AÇIKLAMA + GÖRSELLER
 # =========================================================
 
-def detay_bilgileri(url):
+def detay_bilgileri(
+    product_id,
+    url
+):
 
-    """
-    Duna PRODUCT_DATA içindeki ürün URL'si bazı ürünlerde İngilizce slug'a gider.
-    Ürün sayfasındaki resmi <link rel="alternate" hreflang="tr"> adresini bulup
-    Türkçe sayfayı açar. İsim ve açıklama Duna'dan geldiği haliyle alınır.
-    Hiçbir otomatik çeviri yapılmaz.
-    """
+    # Duna/T-Soft'un kendi ürün dil değiştirme servisini çağır.
+    turkish_url = tsoft_urun_turkce_url(
+        product_id,
+        url
+    )
 
     try:
-        first_html = sayfa_getir(
-            url,
-            params={"language": "tr"}
+        html_text = sayfa_getir(
+            turkish_url,
+            referer=url,
+            params={
+                "language": "tr"
+            }
         )
+
     except Exception as exc:
         print(
             "Detay sayfasi alinamadi:",
-            url,
+            turkish_url,
             exc
         )
-        return "", "", [], url
+        return "", "", [], turkish_url
 
-    first_soup = BeautifulSoup(
-        first_html,
+    soup = BeautifulSoup(
+        html_text,
         "html.parser"
     )
 
-    turkish_url = url
+    # T-Soft hâlâ alternate TR URL veriyorsa onu da son güvence olarak kullan.
+    tr_alternate = ""
 
-    # Duna'nın kendi çok-dilli yapısındaki resmi Türkçe URL.
-    for link in first_soup.find_all(
+    for link in soup.find_all(
         "link",
-        attrs={"rel": "alternate"}
+        attrs={
+            "rel": "alternate"
+        }
     ):
         hreflang = temizle(
             link.get("hreflang")
@@ -877,36 +1114,52 @@ def detay_bilgileri(url):
             link.get("href")
         )
 
-        if hreflang in {"tr", "tr-tr"} and href:
-            turkish_url = urljoin(
+        if (
+            hreflang in {
+                "tr",
+                "tr-tr"
+            }
+            and href
+        ):
+            tr_alternate = urljoin(
                 BASE_URL,
-                html.unescape(href)
+                html.unescape(
+                    href
+                )
             )
             break
 
-    # İlk URL İngilizce slug ise Türkçe alternate sayfayı ayrıca aç.
-    if turkish_url.rstrip("/") != url.rstrip("/"):
+    if (
+        tr_alternate
+        and tr_alternate.rstrip("/")
+        != turkish_url.rstrip("/")
+    ):
         try:
-            turkish_html = sayfa_getir(
-                turkish_url,
-                referer=url
+            html_text = sayfa_getir(
+                tr_alternate,
+                referer=turkish_url,
+                params={
+                    "language": "tr"
+                }
             )
+
             soup = BeautifulSoup(
-                turkish_html,
+                html_text,
                 "html.parser"
             )
+
+            turkish_url = (
+                tr_alternate
+            )
+
         except Exception as exc:
             print(
-                "Turkce detay sayfasi alinamadi, ilk sayfa kullaniliyor:",
-                turkish_url,
+                "UYARI: Alternate TR sayfasi alinamadi:",
+                tr_alternate,
                 exc
             )
-            soup = first_soup
-            turkish_url = url
-    else:
-        soup = first_soup
 
-    # Ürün adını Duna'nın Türkçe ürün detay sayfasından olduğu gibi al.
+    # Ürün adını Duna'nın kendi Türkçe çıktısından al.
     detail_name = ""
 
     for selector in [
@@ -916,7 +1169,9 @@ def detay_bilgileri(url):
         "h1.product-title",
         "h1"
     ]:
-        node = soup.select_one(selector)
+        node = soup.select_one(
+            selector
+        )
 
         if node:
             candidate = temizle(
@@ -927,10 +1182,12 @@ def detay_bilgileri(url):
             )
 
             if candidate:
-                detail_name = candidate
+                detail_name = (
+                    candidate
+                )
                 break
 
-    # H1 bulunamazsa Duna'nın kendi og:title / title alanını kullan.
+    # H1 yoksa og:title / title kullan.
     if not detail_name:
         og_title = soup.select_one(
             'meta[property="og:title"]'
@@ -938,10 +1195,15 @@ def detay_bilgileri(url):
 
         if og_title:
             detail_name = temizle(
-                og_title.get("content")
+                og_title.get(
+                    "content"
+                )
             )
 
-    if not detail_name and soup.title:
+    if (
+        not detail_name
+        and soup.title
+    ):
         detail_name = temizle(
             soup.title.get_text(
                 " ",
@@ -949,7 +1211,7 @@ def detay_bilgileri(url):
             )
         )
 
-    # Açıklama ve teknik özellikleri Duna'nın Türkçe sayfasından olduğu gibi al.
+    # Açıklama / teknik özellik HTML'i doğrudan Duna'dan.
     description = ""
 
     for selector in [
@@ -959,7 +1221,9 @@ def detay_bilgileri(url):
         ".productDetailDescription",
         "[itemprop='description']",
     ]:
-        node = soup.select_one(selector)
+        node = soup.select_one(
+            selector
+        )
 
         if (
             node
@@ -970,10 +1234,11 @@ def detay_bilgileri(url):
                 )
             ) > 30
         ):
-            description = str(node)
+            description = str(
+                node
+            )
             break
 
-    # Detay HTML alanı yoksa Duna'nın kendi meta açıklamasını yedek olarak al.
     if not description:
         meta_description = soup.select_one(
             'meta[name="description"]'
@@ -981,13 +1246,17 @@ def detay_bilgileri(url):
 
         if meta_description:
             meta_text = temizle(
-                meta_description.get("content")
+                meta_description.get(
+                    "content"
+                )
             )
 
             if meta_text:
                 description = (
                     "<p>"
-                    + html.escape(meta_text)
+                    + html.escape(
+                        meta_text
+                    )
                     + "</p>"
                 )
 
@@ -998,7 +1267,9 @@ def detay_bilgileri(url):
     ):
         image_src = (
             img.get("data-src")
-            or img.get("data-original")
+            or img.get(
+                "data-original"
+            )
             or img.get("src")
         )
 
@@ -1009,25 +1280,33 @@ def detay_bilgileri(url):
             image_src
         )
 
-        if image_src.startswith("//"):
+        if image_src.startswith(
+            "//"
+        ):
             image_src = (
                 "https:"
                 + image_src
             )
 
-        elif image_src.startswith("/"):
+        elif image_src.startswith(
+            "/"
+        ):
             image_src = (
                 BASE_URL
                 + image_src
             )
 
         if (
-            "duna.com.tr" in image_src
+            "duna.com.tr"
+            in image_src
             and (
-                "-O." in image_src
-                or "-B." in image_src
+                "-O."
+                in image_src
+                or "-B."
+                in image_src
             )
-            and image_src not in images
+            and image_src
+            not in images
         ):
             images.append(
                 image_src
@@ -1148,15 +1427,16 @@ def urun_xml_ekle(
             f"{name}"
         )
 
-    # Duna'nın resmi Türkçe detay URL'sinden isim + açıklama + görseller.
+    # Duna/T-Soft'un kendi Türkçe dil servisini kullan.
     detail_name, description, detail_images, turkish_product_url = (
         detay_bilgileri(
+            product_id,
             product_url
         )
     )
 
-    # Türkçe detay sayfasında isim bulunduysa aynen kullan.
-    # Bulunamazsa PRODUCT_DATA adı yedek olarak korunur; çeviri yapılmaz.
+    # Türkçe detay adı geldiyse aynen kullan.
+    # Gelmediyse PRODUCT_DATA adı yedek kalır; harici çeviri yok.
     if detail_name:
         name = detail_name
 
