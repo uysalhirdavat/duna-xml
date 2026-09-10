@@ -13,12 +13,11 @@ from lxml import etree
 
 BASE_URL = "https://www.duna.com.tr"
 CATALOG_URL = BASE_URL + "/all-products"
+
 FALLBACK_CATEGORY_URLS = [
     BASE_URL + "/boya-tabancasi"
 ]
 
-# Güvenlik sınırı.
-# Bir kategoride 100 sayfadan fazla varsa burada durur.
 MAX_PAGE = 100
 
 
@@ -36,9 +35,9 @@ session = requests.Session()
 session.headers.update(HEADERS)
 
 
-# ---------------------------------------------------------
+# =========================================================
 # GENEL
-# ---------------------------------------------------------
+# =========================================================
 
 def temizle(value):
     if value is None:
@@ -48,62 +47,37 @@ def temizle(value):
 
 def tl_fiyat_cevir(value):
     """
-    Örnekler:
-
-    1.434,64  -> 1434.64
-    789,05    -> 789.05
-    789.05    -> 789.05
+    1.434,64 -> 1434.64
+    789,05   -> 789.05
+    789.05   -> 789.05
     """
 
     if value is None:
         return ""
 
     value = str(value).strip()
-
-    value = re.sub(
-        r"[^0-9,.\-]",
-        "",
-        value
-    )
+    value = re.sub(r"[^0-9,.\-]", "", value)
 
     if not value:
         return ""
 
     if "," in value and "." in value:
 
-        # Türkçe:
-        # 1.434,64
         if value.rfind(",") > value.rfind("."):
-            value = (
-                value
-                .replace(".", "")
-                .replace(",", ".")
-            )
-
-        # İngilizce:
-        # 1,434.64
+            value = value.replace(".", "").replace(",", ".")
         else:
             value = value.replace(",", "")
 
     elif "," in value:
 
-        value = (
-            value
-            .replace(".", "")
-            .replace(",", ".")
-        )
+        value = value.replace(".", "").replace(",", ".")
 
     else:
 
-        # 1.434 gibi bir değer binlik ayraç olabilir.
-        if re.fullmatch(
-            r"-?\d{1,3}(?:\.\d{3})+",
-            value
-        ):
+        if re.fullmatch(r"-?\d{1,3}(?:\.\d{3})+", value):
             value = value.replace(".", "")
 
     try:
-
         price = float(value)
 
         if price <= 0:
@@ -112,37 +86,24 @@ def tl_fiyat_cevir(value):
         return f"{price:.2f}"
 
     except Exception:
-
         return ""
 
 
-# ---------------------------------------------------------
+# =========================================================
 # DUNA BAYİ GİRİŞİ
-# ---------------------------------------------------------
+# =========================================================
 
 def duna_giris_yap():
 
-    username = os.environ.get(
-        "DUNA_USERNAME",
-        ""
-    ).strip()
-
-    password = os.environ.get(
-        "DUNA_PASSWORD",
-        ""
-    )
+    username = os.environ.get("DUNA_USERNAME", "").strip()
+    password = os.environ.get("DUNA_PASSWORD", "")
 
     if not username or not password:
-
         raise RuntimeError(
-            "DUNA_USERNAME veya DUNA_PASSWORD "
-            "GitHub Secret bulunamadi."
+            "DUNA_USERNAME veya DUNA_PASSWORD GitHub Secret bulunamadi."
         )
 
-    giris_sayfasi = (
-        BASE_URL +
-        "/bayi-girisi-sayfasi"
-    )
+    giris_sayfasi = BASE_URL + "/bayi-girisi-sayfasi"
 
     r = session.get(
         giris_sayfasi,
@@ -153,10 +114,10 @@ def duna_giris_yap():
     r.raise_for_status()
 
     login_url = (
-        BASE_URL +
-        "/srv/customer/signin/email/" +
-        quote(username, safe="") +
-        "?language=tr"
+        BASE_URL
+        + "/srv/customer/signin/email/"
+        + quote(username, safe="")
+        + "?language=tr"
     )
 
     response = session.post(
@@ -185,25 +146,16 @@ def duna_giris_yap():
     check.raise_for_status()
 
     if "uye-siparisleri" not in check.url.lower():
+        raise RuntimeError("Duna bayi girisi basarisiz.")
 
-        raise RuntimeError(
-            "Duna bayi girisi basarisiz."
-        )
-
-    print(
-        "Duna bayi girisi basarili."
-    )
+    print("Duna bayi girisi basarili.")
 
 
-# ---------------------------------------------------------
+# =========================================================
 # HTTP
-# ---------------------------------------------------------
+# =========================================================
 
-def sayfa_getir(
-    url,
-    referer=None,
-    params=None
-):
+def sayfa_getir(url, referer=None, params=None):
 
     headers = {}
 
@@ -223,9 +175,9 @@ def sayfa_getir(
     return response.text
 
 
-# ---------------------------------------------------------
-# PRODUCT_DATA OKUMA
-# ---------------------------------------------------------
+# =========================================================
+# PRODUCT_DATA
+# =========================================================
 
 def product_data_bul(html_text):
 
@@ -238,75 +190,79 @@ def product_data_bul(html_text):
         re.DOTALL
     )
 
-    for match in pattern.finditer(
-        html_text
-    ):
+    for match in pattern.finditer(html_text):
 
         raw = match.group(1)
 
         try:
 
-            decoded = (
-                bytes(
-                    raw,
-                    "utf-8"
-                )
-                .decode(
-                    "unicode_escape"
-                )
+            decoded = bytes(
+                raw,
+                "utf-8"
+            ).decode(
+                "unicode_escape"
             )
 
-            decoded = (
-                decoded
-                .encode("latin1")
-                .decode("utf-8")
+            decoded = decoded.encode(
+                "latin1"
+            ).decode(
+                "utf-8"
             )
 
         except Exception:
 
             decoded = (
                 raw
-                .replace(
-                    "\\'",
-                    "'"
-                )
-                .replace(
-                    '\\"',
-                    '"'
-                )
+                .replace("\\'", "'")
+                .replace('\\"', '"')
             )
 
         try:
 
-            data = json.loads(
-                decoded
-            )
-
-            products.append(
-                data
-            )
+            data = json.loads(decoded)
+            products.append(data)
 
         except Exception:
-
             continue
 
     return products
 
 
-# ---------------------------------------------------------
+# =========================================================
+# SAYFA TÜRÜ
+# =========================================================
+
+def sayfa_kategori_mi(html_text):
+
+    patterns = [
+        r"PAGE_TYPE\s*=\s*['\"]category['\"]",
+        r"PAGE_TYPE['\"]?\s*:\s*['\"]category['\"]",
+        r"['\"]PAGE_TYPE['\"]\s*=\s*['\"]category['\"]",
+    ]
+
+    for pattern in patterns:
+
+        if re.search(
+            pattern,
+            html_text,
+            re.I
+        ):
+            return True
+
+    return False
+
+
+# =========================================================
 # KATEGORİ KEŞFİ
-# ---------------------------------------------------------
+# =========================================================
 
 def kategori_adayi_mi(url):
 
-    parsed = urlparse(
-        url
-    )
+    parsed = urlparse(url)
 
     if (
         parsed.netloc
-        and parsed.netloc not in
-        {
+        and parsed.netloc not in {
             "www.duna.com.tr",
             "duna.com.tr"
         }
@@ -340,10 +296,7 @@ def kategori_adayi_mi(url):
         "/signin",
     )
 
-    if any(
-        x in path.lower()
-        for x in yasakli
-    ):
+    if any(x in path.lower() for x in yasakli):
         return False
 
     if path.lower().endswith(
@@ -360,13 +313,6 @@ def kategori_adayi_mi(url):
             ".xml",
             ".ico",
         )
-    ):
-        return False
-
-    # Ürün URL'lerinin sonunda çoğu zaman ID bulunuyor.
-    if re.search(
-        r"-\d+$",
-        path
     ):
         return False
 
@@ -389,13 +335,11 @@ def kategori_url_kesfet():
     except Exception as exc:
 
         print(
-            "Kategori kesfi basarisiz, fallback:",
+            "Kategori kesfi basarisiz:",
             exc
         )
 
-        return (
-            FALLBACK_CATEGORY_URLS[:]
-        )
+        return FALLBACK_CATEGORY_URLS[:]
 
     soup = BeautifulSoup(
         katalog_html,
@@ -410,21 +354,18 @@ def kategori_url_kesfet():
     ):
 
         href = html.unescape(
-            a.get(
-                "href",
-                ""
-            )
+            a.get("href", "")
         ).strip()
 
-        if (
-            not href
-            or href.startswith(
-                (
-                    "#",
-                    "javascript:",
-                    "mailto:",
-                    "tel:"
-                )
+        if not href:
+            continue
+
+        if href.startswith(
+            (
+                "#",
+                "javascript:",
+                "mailto:",
+                "tel:"
             )
         ):
             continue
@@ -444,15 +385,12 @@ def kategori_url_kesfet():
             f"{parsed.path}"
         ).rstrip("/")
 
-        if kategori_adayi_mi(
-            clean
-        ):
+        if kategori_adayi_mi(clean):
             counts[clean] += 1
 
     adaylar = [
         url
-        for url, count
-        in counts.items()
+        for url, count in counts.items()
         if count >= 2
     ]
 
@@ -465,9 +403,7 @@ def kategori_url_kesfet():
     for url in FALLBACK_CATEGORY_URLS:
 
         if url not in adaylar:
-            adaylar.append(
-                url
-            )
+            adaylar.append(url)
 
     print(
         "Ham kategori adayi:",
@@ -484,24 +420,21 @@ def kategori_url_kesfet():
         try:
 
             if url == CATALOG_URL:
-
                 page_html = katalog_html
-
             else:
-
-                page_html = sayfa_getir(
-                    url
-                )
+                page_html = sayfa_getir(url)
 
             products = product_data_bul(
                 page_html
             )
 
-            if products:
+            # ÜRÜN DETAY SAYFALARINI KATEGORİ SANMA.
+            if (
+                products
+                and sayfa_kategori_mi(page_html)
+            ):
 
-                kategoriler.append(
-                    url
-                )
+                kategoriler.append(url)
 
                 print(
                     f"Kategori bulundu "
@@ -518,21 +451,19 @@ def kategori_url_kesfet():
                 exc
             )
 
-        time.sleep(
-            0.05
-        )
+        time.sleep(0.03)
 
     kategoriler = list(
-        dict.fromkeys(
-            kategoriler
-        )
+        dict.fromkeys(kategoriler)
     )
 
     if not kategoriler:
 
-        return (
-            FALLBACK_CATEGORY_URLS[:]
+        print(
+            "Kategori bulunamadi, fallback kullaniliyor."
         )
+
+        return FALLBACK_CATEGORY_URLS[:]
 
     print(
         "Dogrulanan kategori sayisi:",
@@ -542,30 +473,154 @@ def kategori_url_kesfet():
     return kategoriler
 
 
-# ---------------------------------------------------------
-# KATEGORİ LINK / SLUG
-# ---------------------------------------------------------
+# =========================================================
+# KATEGORİ LINK
+# =========================================================
 
-def kategori_link_bul(
-    category_url
-):
+def kategori_link_bul(category_url):
 
     parsed = urlparse(
         category_url
     )
 
-    link = (
+    return (
         parsed.path
         .strip("/")
         .split("/")[-1]
     )
 
-    return link
 
+# =========================================================
+# SAYFALAMA
+# =========================================================
 
-# ---------------------------------------------------------
-# GERÇEK DUNA SAYFALAMA
-# ---------------------------------------------------------
+def ikinci_sayfa_getir(
+    category_url,
+    link,
+    pg
+):
+
+    """
+    Duna tarayıcı isteğinde gördüğümüz yapı:
+
+    products?link=el-aletleri&pg=2&language=tr
+
+    Önce T-Soft servisinin trailing-slash sürümü denenir.
+
+    Çalışmazsa tarayıcı adres çubuğunda gördüğümüz
+    kategori?ps=2 yöntemi denenir.
+    """
+
+    service_urls = [
+        BASE_URL + "/srv/service/product/products/",
+        BASE_URL + "/srv/service/product/products",
+    ]
+
+    for service_url in service_urls:
+
+        try:
+
+            response = session.get(
+                service_url,
+                params={
+                    "link": link,
+                    "pg": pg,
+                    "language": "tr"
+                },
+                headers={
+                    "Referer": category_url,
+                    "X-Requested-With": "XMLHttpRequest",
+                },
+                timeout=45,
+                allow_redirects=True
+            )
+
+            print(
+                f"Sayfa istegi | "
+                f"pg={pg} | "
+                f"status={response.status_code} | "
+                f"url={response.url}"
+            )
+
+            if response.status_code != 200:
+                continue
+
+            products = product_data_bul(
+                response.text
+            )
+
+            if products:
+
+                print(
+                    f"Servis basarili | "
+                    f"pg={pg} | "
+                    f"urun={len(products)}"
+                )
+
+                return (
+                    response.text,
+                    products
+                )
+
+        except Exception as exc:
+
+            print(
+                "Servis hatasi:",
+                service_url,
+                exc
+            )
+
+    # -----------------------------------------------------
+    # YEDEK YÖNTEM
+    # Tarayıcı adresinde:
+    # /el-aletleri?ps=2
+    # görmüştük.
+    # -----------------------------------------------------
+
+    try:
+
+        response = session.get(
+            category_url,
+            params={
+                "ps": pg
+            },
+            headers={
+                "Referer": category_url
+            },
+            timeout=45,
+            allow_redirects=True
+        )
+
+        print(
+            f"PS yedek istegi | "
+            f"pg={pg} | "
+            f"status={response.status_code} | "
+            f"url={response.url}"
+        )
+
+        if response.status_code == 200:
+
+            products = product_data_bul(
+                response.text
+            )
+
+            if products:
+
+                return (
+                    response.text,
+                    products
+                )
+
+    except Exception as exc:
+
+        print(
+            "PS yedek hatasi:",
+            category_url,
+            exc
+        )
+
+    return "", []
+
 
 def kategori_tum_sayfalar(
     category_url,
@@ -585,7 +640,6 @@ def kategori_tum_sayfalar(
     ]
 
     if not first_products:
-
         return sayfalar
 
     link = kategori_link_bul(
@@ -593,12 +647,6 @@ def kategori_tum_sayfalar(
     )
 
     if not link:
-
-        print(
-            "UYARI: kategori linki bulunamadi:",
-            category_url
-        )
-
         return sayfalar
 
     print(
@@ -608,56 +656,22 @@ def kategori_tum_sayfalar(
     )
 
     seen_page_ids = {
-        temizle(
-            p.get("id")
-        )
+        temizle(p.get("id"))
         for p in first_products
-        if temizle(
-            p.get("id")
-        )
+        if temizle(p.get("id"))
     }
-
-    # Duna'da gördüğümüz gerçek servis:
-    #
-    # /srv/service/product/products
-    # ?link=el-aletleri
-    # &pg=2
-    # &language=tr
-
-    service_url = (
-        BASE_URL +
-        "/srv/service/product/products"
-    )
 
     for pg in range(
         2,
         MAX_PAGE + 1
     ):
 
-        try:
-
-            page_html = sayfa_getir(
-                service_url,
-                referer=category_url,
-                params={
-                    "link": link,
-                    "pg": pg,
-                    "language": "tr"
-                }
+        page_html, products = (
+            ikinci_sayfa_getir(
+                category_url,
+                link,
+                pg
             )
-
-        except Exception as exc:
-
-            print(
-                f"Sayfa {pg} alinamadi | "
-                f"{category_url} | "
-                f"{exc}"
-            )
-
-            break
-
-        products = product_data_bul(
-            page_html
         )
 
         if not products:
@@ -671,13 +685,9 @@ def kategori_tum_sayfalar(
             break
 
         ids = {
-            temizle(
-                p.get("id")
-            )
+            temizle(p.get("id"))
             for p in products
-            if temizle(
-                p.get("id")
-            )
+            if temizle(p.get("id"))
         }
 
         yeni_ids = (
@@ -688,8 +698,7 @@ def kategori_tum_sayfalar(
         if not yeni_ids:
 
             print(
-                f"Sayfalama tekrar etmeye "
-                f"basladi | "
+                f"Sayfalama tekrar etti | "
                 f"{category_url} | "
                 f"pg={pg}"
             )
@@ -704,27 +713,23 @@ def kategori_tum_sayfalar(
             )
         )
 
-        seen_page_ids.update(
-            ids
-        )
+        seen_page_ids.update(ids)
 
         print(
-            f"  Sayfa {pg}: "
+            f"Sayfa {pg}: "
             f"urun={len(products)} | "
             f"yeni={len(yeni_ids)} | "
             f"kumulatif={len(seen_page_ids)}"
         )
 
-        time.sleep(
-            0.10
-        )
+        time.sleep(0.08)
 
     return sayfalar
 
 
-# ---------------------------------------------------------
+# =========================================================
 # FİYAT
-# ---------------------------------------------------------
+# =========================================================
 
 def kart_fiyati_bul(
     html_text,
@@ -745,7 +750,7 @@ def kart_fiyati_bul(
 
     if card:
 
-        # Duna'nın gerçek satış fiyat alanı.
+        # Duna'nın gerçek bayi satış fiyatı.
         price_node = card.select_one(
             '[data-toggle="price-sell"]'
         )
@@ -762,7 +767,7 @@ def kart_fiyati_bul(
             if fiyat:
                 return fiyat
 
-        # Yedek yöntem.
+        # YEDEK
         matches = re.findall(
             r"([0-9]{1,3}"
             r"(?:\.[0-9]{3})*"
@@ -785,9 +790,7 @@ def kart_fiyati_bul(
             if fiyat:
                 return fiyat
 
-    # Son yedek:
-    # Ürün detay sayfası.
-
+    # Ürün detay sayfasından yedek fiyat.
     if product_url:
 
         try:
@@ -801,10 +804,8 @@ def kart_fiyati_bul(
                 "html.parser"
             )
 
-            price_node = (
-                detail_soup.select_one(
-                    '[data-toggle="price-sell"]'
-                )
+            price_node = detail_soup.select_one(
+                '[data-toggle="price-sell"]'
             )
 
             if price_node:
@@ -822,8 +823,7 @@ def kart_fiyati_bul(
         except Exception as exc:
 
             print(
-                "Fiyat icin detay sayfasi "
-                "okunamadi:",
+                "Fiyat detay hatasi:",
                 product_url,
                 exc
             )
@@ -831,19 +831,15 @@ def kart_fiyati_bul(
     return ""
 
 
-# ---------------------------------------------------------
+# =========================================================
 # AÇIKLAMA + GÖRSELLER
-# ---------------------------------------------------------
+# =========================================================
 
-def detay_bilgileri(
-    url
-):
+def detay_bilgileri(url):
 
     try:
 
-        html_text = sayfa_getir(
-            url
-        )
+        html_text = sayfa_getir(url)
 
     except Exception as exc:
 
@@ -886,10 +882,7 @@ def detay_bilgileri(
             ) > 30
         ):
 
-            description = str(
-                node
-            )
-
+            description = str(node)
             break
 
     images = []
@@ -907,16 +900,12 @@ def detay_bilgileri(
         if not src:
             continue
 
-        src = html.unescape(
-            src
-        )
+        src = html.unescape(src)
 
         if src.startswith("//"):
-
             src = "https:" + src
 
         elif src.startswith("/"):
-
             src = BASE_URL + src
 
         if (
@@ -928,9 +917,7 @@ def detay_bilgileri(
             and src not in images
         ):
 
-            images.append(
-                src
-            )
+            images.append(src)
 
     return (
         description,
@@ -938,9 +925,9 @@ def detay_bilgileri(
     )
 
 
-# ---------------------------------------------------------
+# =========================================================
 # XML
-# ---------------------------------------------------------
+# =========================================================
 
 def xml_eleman(
     parent,
@@ -954,10 +941,7 @@ def xml_eleman(
     )
 
     if value is not None:
-
-        node.text = temizle(
-            value
-        )
+        node.text = temizle(value)
 
     return node
 
@@ -979,9 +963,7 @@ def urun_xml_ekle(
 
     code = temizle(
         product.get("code")
-        or product.get(
-            "supplier_code"
-        )
+        or product.get("supplier_code")
     )
 
     name = temizle(
@@ -1024,13 +1006,9 @@ def urun_xml_ekle(
         product.get("url")
     )
 
-    if relative_url.startswith(
-        "http"
-    ):
+    if relative_url.startswith("http"):
 
-        product_url = (
-            relative_url
-        )
+        product_url = relative_url
 
     else:
 
@@ -1068,7 +1046,6 @@ def urun_xml_ekle(
     )
 
     if source_image:
-
         images.append(
             source_image
         )
@@ -1076,34 +1053,28 @@ def urun_xml_ekle(
     for image in detail_images:
 
         if image not in images:
-
             images.append(
                 image
             )
 
-    # ANA KATEGORİ
+    # KATEGORİLER
     main_category = ""
+    sub_category = ""
 
     if category_path:
 
         parts = [
             p.strip()
-            for p
-            in category_path.split(">")
+            for p in category_path.split(">")
             if p.strip()
         ]
 
+        # Tüm Ürün Grupları > El Aletleri > Pense >
         if len(parts) >= 2:
+            main_category = parts[1]
 
-            main_category = (
-                parts[1]
-            )
-
-        elif parts:
-
-            main_category = (
-                parts[0]
-            )
+        if len(parts) >= 3:
+            sub_category = parts[2]
 
     xml_eleman(
         item,
@@ -1191,12 +1162,10 @@ def urun_xml_ekle(
     xml_eleman(
         item,
         "subCategory",
-        ""
+        sub_category
     )
 
-    for i in range(
-        5
-    ):
+    for i in range(5):
 
         value = (
             images[i]
@@ -1225,9 +1194,9 @@ def urun_xml_ekle(
     )
 
 
-# ---------------------------------------------------------
+# =========================================================
 # ANA ÇALIŞMA
-# ---------------------------------------------------------
+# =========================================================
 
 def main():
 
@@ -1241,6 +1210,8 @@ def main():
         "root"
     )
 
+    # Aynı ürün farklı kategorilerde görünse de
+    # XML'e yalnızca bir defa yaz.
     seen = set()
 
     toplam_sayfa = 0
@@ -1296,7 +1267,7 @@ def main():
         ) in sayfalar:
 
             print(
-                f"  Isleniyor "
+                f"Isleniyor "
                 f"pg={pg} | "
                 f"urun={len(products)}"
             )
@@ -1307,10 +1278,10 @@ def main():
                     product.get("id")
                 )
 
-                if (
-                    not product_id
-                    or product_id in seen
-                ):
+                if not product_id:
+                    continue
+
+                if product_id in seen:
                     continue
 
                 seen.add(
@@ -1333,9 +1304,7 @@ def main():
                         exc
                     )
 
-                time.sleep(
-                    0.12
-                )
+                time.sleep(0.08)
 
     etree.ElementTree(
         root
@@ -1347,6 +1316,10 @@ def main():
     )
 
     print("")
+    print(
+        "================================="
+    )
+
     print(
         "duna.xml guncellendi."
     )
@@ -1364,6 +1337,10 @@ def main():
     print(
         "Toplam benzersiz urun:",
         len(seen)
+    )
+
+    print(
+        "================================="
     )
 
 
