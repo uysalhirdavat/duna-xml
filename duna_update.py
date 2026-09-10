@@ -4,14 +4,17 @@ import json
 import html
 import time
 import os
-from urllib.parse import quote
+from collections import Counter
+from urllib.parse import quote, urljoin, urlparse
 from bs4 import BeautifulSoup
 from lxml import etree
 
 BASE_URL = "https://www.duna.com.tr"
+CATALOG_URL = BASE_URL + "/all-products"
 
-CATEGORY_URLS = [
-    "https://www.duna.com.tr/boya-tabancasi",
+# Kategori keşfi başarısız olursa test kategorisi yine çalışmaya devam eder.
+FALLBACK_CATEGORY_URLS = [
+    BASE_URL + "/boya-tabancasi",
 ]
 
 HEADERS = {
@@ -67,7 +70,6 @@ def duna_giris_yap():
     if not username or not password:
         raise RuntimeError("DUNA_USERNAME veya DUNA_PASSWORD GitHub Secret bulunamadi.")
 
-    # Duna'nin aktif bayi giris sayfasini ac ve gerekli cookie/tokenlari al.
     giris_sayfasi = BASE_URL + "/bayi-girisi-sayfasi"
     start = session.get(giris_sayfasi, timeout=30, allow_redirects=True)
     start.raise_for_status()
@@ -94,12 +96,10 @@ def duna_giris_yap():
     )
     response.raise_for_status()
 
-    # Sifre veya cookie loglanmaz. Sadece oturumun gercekten acildigini dogrula.
     check = session.get(BASE_URL + "/uye-siparisleri", timeout=30, allow_redirects=True)
     check.raise_for_status()
 
-    final_url = check.url.lower()
-    if "uye-siparisleri" not in final_url:
+    if "uye-siparisleri" not in check.url.lower():
         raise RuntimeError(
             "Duna bayi girisi basarisiz. Kullanici adi/sifre veya giris akisi kontrol edilmeli."
         )
@@ -108,7 +108,7 @@ def duna_giris_yap():
 
 
 def sayfa_getir(url):
-    response = session.get(url, timeout=30)
+    response = session.get(url, timeout=30, allow_redirects=True)
     response.raise_for_status()
     return response.text
 
@@ -131,6 +131,99 @@ def product_data_bul(html_text):
         except Exception:
             continue
     return products
+
+
+def kategori_adayi_mi(url):
+    parsed = urlparse(url)
+    if parsed.netloc and parsed.netloc not in {"www.duna.com.tr", "duna.com.tr"}:
+        return False
+
+    path = parsed.path.rstrip("/")
+    if not path or path == "":
+        return False
+
+    yasakli = (
+        "/srv/", "/resources/", "/uploads/", "/uye-", "/bayi-",
+        "/sepet", "/favori", "/iletisim", "/hakkimizda", "/blog",
+        "/marka", "/search", "/arama", "/siparis", "/odeme",
+        "/customer", "/account", "/login", "/signin",
+    )
+    if any(x in path.lower() for x in yasakli):
+        return False
+
+    uzantilar = (
+        ".jpg", ".jpeg", ".png", ".webp", ".gif", ".svg",
+        ".pdf", ".css", ".js", ".xml", ".ico",
+    )
+    if path.lower().endswith(uzantilar):
+        return False
+
+    # Duna ürün sayfaları çoğunlukla sonda sayısal ürün kimliği taşır.
+    # Bunları kategori adayı olarak taramayarak binlerce gereksiz isteği önlüyoruz.
+    if re.search(r"-\d+$", path):
+        return False
+
+    return True
+
+
+def kategori_url_kesfet():
+    print("Kategori listesi kesfediliyor:", CATALOG_URL)
+
+    try:
+        katalog_html = sayfa_getir(CATALOG_URL)
+    except Exception as exc:
+        print("Kategori kesfi basarisiz, fallback kullanilacak:", exc)
+        return FALLBACK_CATEGORY_URLS[:]
+
+    soup = BeautifulSoup(katalog_html, "html.parser")
+    href_sayilari = Counter()
+
+    for a in soup.find_all("a", href=True):
+        href = html.unescape(a.get("href", "")).strip()
+        if not href or href.startswith(("#", "javascript:", "mailto:", "tel:")):
+            continue
+
+        absolute = urljoin(BASE_URL + "/", href)
+        parsed = urlparse(absolute)
+        clean_url = f"{parsed.scheme}://{parsed.netloc}{parsed.path}".rstrip("/")
+
+        if kategori_adayi_mi(clean_url):
+            href_sayilari[clean_url] += 1
+
+    # Menü ve kategori ağacındaki bağlantılar masaüstü/mobil alanlarda tekrar eder.
+    # Tek geçen linklerin çoğu ürün/kampanya gibi sayfalardır.
+    adaylar = [url for url, count in href_sayilari.items() if count >= 2]
+
+    # Katalog sayfasının kendisini ve çalışan test kategorisini her zaman dahil et.
+    adaylar.insert(0, CATALOG_URL)
+    for url in FALLBACK_CATEGORY_URLS:
+        if url not in adaylar:
+            adaylar.append(url)
+
+    print("Ham kategori adayi:", len(adaylar))
+
+    kategoriler = []
+    for i, url in enumerate(adaylar, 1):
+        try:
+            page_html = katalog_html if url == CATALOG_URL else sayfa_getir(url)
+            products = product_data_bul(page_html)
+            if products:
+                kategoriler.append(url)
+                print(f"Kategori bulundu ({i}/{len(adaylar)}): {url} | urun={len(products)}")
+        except Exception as exc:
+            print("Kategori adayi okunamadi:", url, exc)
+
+        time.sleep(0.05)
+
+    # Aynı URL'leri korumalı biçimde tekilleştir.
+    kategoriler = list(dict.fromkeys(kategoriler))
+
+    if not kategoriler:
+        print("Hic kategori dogrulanamadi, fallback kullaniliyor.")
+        return FALLBACK_CATEGORY_URLS[:]
+
+    print("Dogrulanan kategori sayisi:", len(kategoriler))
+    return kategoriler
 
 
 def html_icinden_fiyat_bul(node):
@@ -315,10 +408,13 @@ def urun_xml_ekle(root, product, category_html):
 def main():
     duna_giris_yap()
 
+    category_urls = kategori_url_kesfet()
+
     root = etree.Element("root")
     seen = set()
-    for category_url in CATEGORY_URLS:
-        print("Kategori okunuyor:", category_url)
+
+    for category_index, category_url in enumerate(category_urls, 1):
+        print(f"Kategori okunuyor ({category_index}/{len(category_urls)}): {category_url}")
         try:
             category_html = sayfa_getir(category_url)
         except Exception as exc:
@@ -326,24 +422,29 @@ def main():
             continue
 
         products = product_data_bul(category_html)
-        print("Bulunan urun:", len(products))
+        print("Bu sayfadaki urun:", len(products))
+
         for product in products:
             product_id = temizle(product.get("id"))
             if not product_id or product_id in seen:
                 continue
+
             seen.add(product_id)
             try:
                 urun_xml_ekle(root, product, category_html)
             except Exception as exc:
                 print("Urun islenirken hata:", product_id, exc)
-            time.sleep(0.3)
+
+            time.sleep(0.15)
 
     etree.ElementTree(root).write(
         "duna.xml", pretty_print=True, xml_declaration=True, encoding="UTF-8"
     )
+
     print("")
     print("duna.xml guncellendi.")
-    print("Toplam urun:", len(seen))
+    print("Toplam kategori:", len(category_urls))
+    print("Toplam benzersiz urun:", len(seen))
 
 
 if __name__ == "__main__":
