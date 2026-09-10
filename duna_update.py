@@ -837,28 +837,76 @@ def kart_fiyati_bul(
 
 def detay_bilgileri(url):
 
-    try:
-        html_text = sayfa_getir(
-            url,
-            params={
-                "language": "tr"
-            }
-        )
+    """
+    Duna PRODUCT_DATA içindeki ürün URL'si bazı ürünlerde İngilizce slug'a gider.
+    Ürün sayfasındaki resmi <link rel="alternate" hreflang="tr"> adresini bulup
+    Türkçe sayfayı açar. İsim ve açıklama Duna'dan geldiği haliyle alınır.
+    Hiçbir otomatik çeviri yapılmaz.
+    """
 
+    try:
+        first_html = sayfa_getir(
+            url,
+            params={"language": "tr"}
+        )
     except Exception as exc:
         print(
             "Detay sayfasi alinamadi:",
             url,
             exc
         )
-        return "", "", []
+        return "", "", [], url
 
-    soup = BeautifulSoup(
-        html_text,
+    first_soup = BeautifulSoup(
+        first_html,
         "html.parser"
     )
 
-    # Duna detay sayfasındaki ürün adını olduğu gibi al.
+    turkish_url = url
+
+    # Duna'nın kendi çok-dilli yapısındaki resmi Türkçe URL.
+    for link in first_soup.find_all(
+        "link",
+        attrs={"rel": "alternate"}
+    ):
+        hreflang = temizle(
+            link.get("hreflang")
+        ).lower()
+
+        href = temizle(
+            link.get("href")
+        )
+
+        if hreflang in {"tr", "tr-tr"} and href:
+            turkish_url = urljoin(
+                BASE_URL,
+                html.unescape(href)
+            )
+            break
+
+    # İlk URL İngilizce slug ise Türkçe alternate sayfayı ayrıca aç.
+    if turkish_url.rstrip("/") != url.rstrip("/"):
+        try:
+            turkish_html = sayfa_getir(
+                turkish_url,
+                referer=url
+            )
+            soup = BeautifulSoup(
+                turkish_html,
+                "html.parser"
+            )
+        except Exception as exc:
+            print(
+                "Turkce detay sayfasi alinamadi, ilk sayfa kullaniliyor:",
+                turkish_url,
+                exc
+            )
+            soup = first_soup
+            turkish_url = url
+    else:
+        soup = first_soup
+
+    # Ürün adını Duna'nın Türkçe ürün detay sayfasından olduğu gibi al.
     detail_name = ""
 
     for selector in [
@@ -882,7 +930,26 @@ def detay_bilgileri(url):
                 detail_name = candidate
                 break
 
-    # Duna açıklama / teknik özellik HTML'ini olduğu gibi al.
+    # H1 bulunamazsa Duna'nın kendi og:title / title alanını kullan.
+    if not detail_name:
+        og_title = soup.select_one(
+            'meta[property="og:title"]'
+        )
+
+        if og_title:
+            detail_name = temizle(
+                og_title.get("content")
+            )
+
+    if not detail_name and soup.title:
+        detail_name = temizle(
+            soup.title.get_text(
+                " ",
+                strip=True
+            )
+        )
+
+    # Açıklama ve teknik özellikleri Duna'nın Türkçe sayfasından olduğu gibi al.
     description = ""
 
     for selector in [
@@ -906,6 +973,24 @@ def detay_bilgileri(url):
             description = str(node)
             break
 
+    # Detay HTML alanı yoksa Duna'nın kendi meta açıklamasını yedek olarak al.
+    if not description:
+        meta_description = soup.select_one(
+            'meta[name="description"]'
+        )
+
+        if meta_description:
+            meta_text = temizle(
+                meta_description.get("content")
+            )
+
+            if meta_text:
+                description = (
+                    "<p>"
+                    + html.escape(meta_text)
+                    + "</p>"
+                )
+
     images = []
 
     for img in soup.find_all(
@@ -920,13 +1005,21 @@ def detay_bilgileri(url):
         if not image_src:
             continue
 
-        image_src = html.unescape(image_src)
+        image_src = html.unescape(
+            image_src
+        )
 
         if image_src.startswith("//"):
-            image_src = "https:" + image_src
+            image_src = (
+                "https:"
+                + image_src
+            )
 
         elif image_src.startswith("/"):
-            image_src = BASE_URL + image_src
+            image_src = (
+                BASE_URL
+                + image_src
+            )
 
         if (
             "duna.com.tr" in image_src
@@ -936,12 +1029,15 @@ def detay_bilgileri(url):
             )
             and image_src not in images
         ):
-            images.append(image_src)
+            images.append(
+                image_src
+            )
 
     return (
         detail_name,
         description,
-        images[:5]
+        images[:5],
+        turkish_url
     )
 
 
@@ -1052,14 +1148,15 @@ def urun_xml_ekle(
             f"{name}"
         )
 
-    # TURKCE URUN ADI + ACIKLAMA + GORSEL
-    detail_name, description, detail_images = (
+    # Duna'nın resmi Türkçe detay URL'sinden isim + açıklama + görseller.
+    detail_name, description, detail_images, turkish_product_url = (
         detay_bilgileri(
             product_url
         )
     )
 
-    # Detay sayfasında isim bulunduysa aynen kullan.
+    # Türkçe detay sayfasında isim bulunduysa aynen kullan.
+    # Bulunamazsa PRODUCT_DATA adı yedek olarak korunur; çeviri yapılmaz.
     if detail_name:
         name = detail_name
 
@@ -1206,7 +1303,7 @@ def urun_xml_ekle(
     xml_eleman(
         item,
         "sourceUrl",
-        product_url
+        turkish_product_url
     )
 
     print(
@@ -1362,6 +1459,7 @@ def main():
         "Toplam benzersiz urun:",
         len(seen)
     )
+
     print(
         "================================="
     )
