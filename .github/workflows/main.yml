@@ -3,7 +3,7 @@ name: Duna XML Otomatik Guncelleme
 on:
   workflow_dispatch:
   schedule:
-    - cron: "0 */2 * * *"
+    - cron: "0 */5 * * *"
 
 permissions:
   contents: write
@@ -15,7 +15,7 @@ concurrency:
 jobs:
   update-duna-xml:
     runs-on: ubuntu-latest
-    timeout-minutes: 75
+    timeout-minutes: 120
 
     steps:
       - name: Depoyu al
@@ -42,6 +42,6 @@ jobs:
           git config user.name "duna-xml-bot"
           git config user.email "actions@github.com"
           git add duna.xml
-          git diff --cached --quiet || git commit -m "Duna XML otomatik guncelleme"
+          git diff --cached --quiet || git commit -m "Duna XML T-Soft dil servisi guncelleme"
           git pull --rebase origin main
           git push
